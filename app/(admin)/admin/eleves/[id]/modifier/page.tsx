@@ -11,7 +11,7 @@ interface FormData {
   poids: string; taille: string; adresse: string; ville: string;
   codePostal: string; contactUrgence: string; telUrgence: string;
   niveauSport: string; objectifs: string; medical: string;
-  montantMensuel: string; typeAbonnement: string;
+  montantMensuel: string; typeAbonnement: string; nomFamille: string;
 }
 
 const defaultForm: FormData = {
@@ -19,7 +19,7 @@ const defaultForm: FormData = {
   ceinture: "BLANCHE", barrettes: 0, notes: "", actif: true,
   poids: "", taille: "", adresse: "", ville: "", codePostal: "",
   contactUrgence: "", telUrgence: "", niveauSport: "", objectifs: "", medical: "",
-  montantMensuel: "", typeAbonnement: "MENSUEL",
+  montantMensuel: "", typeAbonnement: "MENSUEL", nomFamille: "",
 };
 
 export default function ModifierElevePage() {
@@ -57,6 +57,7 @@ export default function ModifierElevePage() {
           medical: eleve.medical ?? "",
           montantMensuel: eleve.montantMensuel != null ? String(eleve.montantMensuel) : "",
           typeAbonnement: eleve.typeAbonnement ?? "MENSUEL",
+          nomFamille: eleve.nomFamille ?? "",
         });
         setFetching(false);
       });
@@ -243,6 +244,16 @@ export default function ModifierElevePage() {
               />
               <p className="text-xs text-[#aaaaaa] mt-1">Laisser vide pour utiliser le tarif standard</p>
             </div>
+          </div>
+          <div>
+            <label className={labelClass}>Nom de famille (réduction famille)</label>
+            <input
+              value={form.nomFamille}
+              onChange={set("nomFamille")}
+              placeholder="Ex : Martin"
+              className={inputClass + " placeholder:text-[#aaaaaa]"}
+            />
+            <p className="text-xs text-[#aaaaaa] mt-1">Les élèves ayant le même nom de famille bénéficient de la réduction famille</p>
           </div>
         </div>
 

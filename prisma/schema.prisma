@@ -44,9 +44,11 @@ model Eleve {
   notes           String?
   ceinture        String      @default("BLANCHE")
   barrettes       Int         @default(0)
+  nomFamille      String?
   montantMensuel  Float?
   typeAbonnement  String      @default("MENSUEL")
   user            User?
+  cotisations     Cotisation[]
   presences       Presence[]
   promotions      Promotion[]
   paiements       Paiement[]
@@ -118,4 +120,36 @@ model Paiement {
   createdAt DateTime  @default(now())
 
   @@unique([eleveId, mois, annee])
+}
+
+model Cotisation {
+  id                      String     @id @default(cuid())
+  eleveId                 String
+  eleve                   Eleve      @relation(fields: [eleveId], references: [id])
+  saison                  String
+  montantBase             Float
+  reductionRenouvellement Float      @default(0)
+  reductionFamille        Float      @default(0)
+  reductionManuelle       Float      @default(0)
+  montantTotal            Float
+  nbEcheances             Int        @default(1)
+  statut                  String     @default("EN_ATTENTE")
+  notes                   String?
+  echeances               Echeance[]
+  createdAt               DateTime   @default(now())
+
+  @@unique([eleveId, saison])
+}
+
+model Echeance {
+  id           String     @id @default(cuid())
+  cotisationId String
+  cotisation   Cotisation @relation(fields: [cotisationId], references: [id], onDelete: Cascade)
+  numero       Int
+  montant      Float
+  dateLimite   DateTime
+  datePaiement DateTime?
+  statut       String     @default("EN_ATTENTE")
+  modePaiement String?
+  note         String?
 }

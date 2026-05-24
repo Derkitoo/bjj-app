@@ -30,7 +30,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const {
     nom, prenom, email, telephone, dateNaissance, ceinture, barrettes, notes, actif,
     poids, taille, adresse, ville, codePostal, contactUrgence, telUrgence,
-    niveauSport, objectifs, medical, montantMensuel, typeAbonnement,
+    niveauSport, objectifs, medical, montantMensuel, typeAbonnement, nomFamille,
   } = body;
 
   const eleve = await prisma.eleve.update({
@@ -57,6 +57,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       medical: medical || null,
       montantMensuel: montantMensuel ? parseFloat(montantMensuel) : null,
       typeAbonnement: typeAbonnement || "MENSUEL",
+      nomFamille: nomFamille || null,
     },
   });
 
