@@ -20,7 +20,7 @@ type FormState = { type: string; jour: number; heureDebut: string; duree: number
 const JOURS_ORDERED = [1, 2, 3, 4, 5, 6, 0];
 const JOURS_LABELS: Record<number, string> = { 0: "Dimanche", 1: "Lundi", 2: "Mardi", 3: "Mercredi", 4: "Jeudi", 5: "Vendredi", 6: "Samedi" };
 const JOURS_SHORT: Record<number, string> = { 0: "Dim", 1: "Lun", 2: "Mar", 3: "Mer", 4: "Jeu", 5: "Ven", 6: "Sam" };
-const TYPES: Record<string, string> = { GI: "Gi", NO_GI: "No-Gi", KIDS: "Kids", COMPETITION: "Compétition", OPEN_MAT: "Open Mat" };
+const TYPES: Record<string, string> = { GI: "Gi", NO_GI: "No-Gi", KIDS: "Kids", COMPETITION: "Compétition", OPEN_MAT: "Open Mat",SELF_DEFENSE: "Self-Défense" };
 
 const TYPE_COLORS: Record<string, { bg: string; border: string; text: string; dot: string }> = {
   GI:          { bg: "#dbeafe", border: "#93c5fd", text: "#1e40af", dot: "#3b82f6" },
@@ -28,6 +28,8 @@ const TYPE_COLORS: Record<string, { bg: string; border: string; text: string; do
   KIDS:        { bg: "#dcfce7", border: "#86efac", text: "#166534", dot: "#22c55e" },
   COMPETITION: { bg: "#fee2e2", border: "#fca5a5", text: "#dc2626", dot: "#ef4444" },
   OPEN_MAT:    { bg: "#f1f5f9", border: "#cbd5e1", text: "#475569", dot: "#94a3b8" },
+  SELF_DEFENSE: { bg: "#fef3c7", border: "#fcd34d", text: "#92400e", dot: "#f59e0b" },
+};
 };
 
 const HOUR_START = 7;
