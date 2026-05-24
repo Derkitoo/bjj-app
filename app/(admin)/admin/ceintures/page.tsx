@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import CeintureBadge from "@/components/CeintureBadge";
 import PromouvoirButton from "./PromouvoirButton";
-import { Award } from "lucide-react";
+import Link from "next/link";
+import { Award, Settings } from "lucide-react";
 
 const NEXT: Record<string, string> = { BLANCHE: "BLEUE", BLEUE: "VIOLETTE", VIOLETTE: "MARRON", MARRON: "NOIRE" };
 
@@ -44,7 +45,14 @@ export default async function CeinturesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-[#1a1a1a] mb-6">Ceintures</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-[#1a1a1a]">Ceintures</h1>
+        <Link href="/admin/ceintures/criteres"
+          className="flex items-center gap-2 border border-[#e5e5e5] text-[#666666] rounded-[8px] px-4 py-2 text-sm font-medium hover:bg-[#f9f9f9] transition-colors">
+          <Settings size={15} />
+          Critères
+        </Link>
+      </div>
 
       {eligibles.length > 0 && (
         <div className="bg-[#fef2f2] border border-[#cc0000]/20 rounded-[12px] p-5 mb-6">

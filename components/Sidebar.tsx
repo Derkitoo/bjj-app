@@ -14,6 +14,7 @@ import {
   Home,
   User,
   UserCog,
+  CreditCard,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -27,6 +28,7 @@ const adminLinks = [
   { href: "/admin/planning", label: "Planning", icon: Calendar },
   { href: "/admin/ceintures", label: "Ceintures", icon: Award },
   { href: "/admin/actualites", label: "Actualités", icon: Newspaper },
+  { href: "/admin/paiements", label: "Paiements", icon: CreditCard },
   { href: "/admin/comptes", label: "Comptes", icon: UserCog },
 ];
 
