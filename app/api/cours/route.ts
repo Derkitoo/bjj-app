@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { type, jour, heureDebut, duree, titre, recurrent } = body;
+  const { type, jour, heureDebut, duree, titre, recurrent, categorie } = body;
 
   const cours = await prisma.cours.create({
     data: {
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       duree: Number(duree),
       titre: titre || null,
       recurrent: Boolean(recurrent),
+      categorie: categorie || "TOUS",
     },
   });
 

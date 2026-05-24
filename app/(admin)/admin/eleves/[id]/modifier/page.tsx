@@ -11,7 +11,7 @@ interface FormData {
   poids: string; taille: string; adresse: string; ville: string;
   codePostal: string; contactUrgence: string; telUrgence: string;
   niveauSport: string; objectifs: string; medical: string;
-  montantMensuel: string; typeAbonnement: string; nomFamille: string;
+  montantMensuel: string; typeAbonnement: string; nomFamille: string; categorie: string;
 }
 
 const defaultForm: FormData = {
@@ -19,7 +19,7 @@ const defaultForm: FormData = {
   ceinture: "BLANCHE", barrettes: 0, notes: "", actif: true,
   poids: "", taille: "", adresse: "", ville: "", codePostal: "",
   contactUrgence: "", telUrgence: "", niveauSport: "", objectifs: "", medical: "",
-  montantMensuel: "", typeAbonnement: "MENSUEL", nomFamille: "",
+  montantMensuel: "", typeAbonnement: "MENSUEL", nomFamille: "", categorie: "ADULTES",
 };
 
 export default function ModifierElevePage() {
@@ -58,6 +58,7 @@ export default function ModifierElevePage() {
           montantMensuel: eleve.montantMensuel != null ? String(eleve.montantMensuel) : "",
           typeAbonnement: eleve.typeAbonnement ?? "MENSUEL",
           nomFamille: eleve.nomFamille ?? "",
+          categorie: eleve.categorie ?? "ADULTES",
         });
         setFetching(false);
       });
@@ -127,6 +128,18 @@ export default function ModifierElevePage() {
             <div>
               <label className={labelClass}>Téléphone</label>
               <input value={form.telephone} onChange={set("telephone")} className={inputClass} />
+            </div>
+          </div>
+          <div>
+            <label className={labelClass}>Catégorie</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[{ v: "ADULTES", label: "🥋 Adultes", sub: "14 ans et +" }, { v: "KIDS", label: "⭐ Kids", sub: "8 à 13 ans" }].map(({ v, label, sub }) => (
+                <button key={v} type="button" onClick={() => setForm((f) => ({ ...f, categorie: v }))}
+                  className={`py-2 px-3 rounded-[8px] border-2 text-left transition-colors ${form.categorie === v ? "border-[var(--color-primary)] bg-[var(--color-primary-subtle)]" : "border-[#e5e5e5] hover:border-[#cccccc]"}`}>
+                  <p className={`text-sm font-semibold ${form.categorie === v ? "text-[var(--color-primary)]" : "text-[#1a1a1a]"}`}>{label}</p>
+                  <p className="text-[10px] text-[#999999]">{sub}</p>
+                </button>
+              ))}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">

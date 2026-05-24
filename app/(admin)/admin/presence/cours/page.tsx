@@ -17,6 +17,7 @@ interface Cours {
   titre: string | null;
   recurrent: boolean;
   annule: boolean;
+  categorie: string;
 }
 
 interface Eleve {
@@ -25,6 +26,7 @@ interface Eleve {
   prenom: string;
   ceinture: string;
   barrettes: number;
+  categorie: string;
 }
 
 interface Presence {
@@ -156,6 +158,7 @@ export default function PresenceCoursPage() {
   const absentIds = new Set(presences.map((p) => p.eleveId));
   const eligibles = allEleves.filter((e) => {
     if (absentIds.has(e.id)) return false;
+    if (selected && selected.categorie !== "TOUS" && e.categorie !== selected.categorie) return false;
     const q = searchAdd.toLowerCase();
     return !q || e.nom.toLowerCase().includes(q) || e.prenom.toLowerCase().includes(q);
   });
@@ -214,7 +217,11 @@ export default function PresenceCoursPage() {
                       >
                         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: TYPE_DOTS[c.type] ?? "#aaa" }} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#1a1a1a]">{TYPES[c.type]}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-medium text-[#1a1a1a] truncate">{TYPES[c.type]}</p>
+                            {c.categorie === "KIDS" && <span className="text-[9px] px-1 py-0.5 rounded-full bg-green-100 text-green-700 font-medium flex-shrink-0">Kids</span>}
+                            {c.categorie === "ADULTES" && <span className="text-[9px] px-1 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium flex-shrink-0">Adultes</span>}
+                          </div>
                           <p className="text-xs text-[#999999] flex items-center gap-1 mt-0.5">
                             <Clock size={10} />
                             {c.heureDebut} · {formatDuree(c.duree)}
@@ -251,10 +258,18 @@ export default function PresenceCoursPage() {
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#f0f0f0] gap-3 flex-wrap">
               <div>
-                <p className="font-bold text-[#1a1a1a]">
-                  {JOURS[selected.jour]} · {TYPES[selected.type]}
-                  {selected.titre && <span className="font-normal text-[#666666]"> · {selected.titre}</span>}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-[#1a1a1a]">
+                    {JOURS[selected.jour]} · {TYPES[selected.type]}
+                    {selected.titre && <span className="font-normal text-[#666666]"> · {selected.titre}</span>}
+                  </p>
+                  {selected.categorie === "ADULTES" && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">🥋 Adultes</span>
+                  )}
+                  {selected.categorie === "KIDS" && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">⭐ Kids</span>
+                  )}
+                </div>
                 <p className="text-xs text-[#999999] mt-0.5 flex items-center gap-1">
                   <Clock size={10} />
                   {selected.heureDebut} · {formatDuree(selected.duree)}
@@ -337,6 +352,11 @@ export default function PresenceCoursPage() {
             {/* Ajout élève */}
             {showAdd && (
               <div className="px-5 pt-4 pb-3 border-b border-[#f0f0f0] bg-[#fafafa]">
+                {selected && selected.categorie !== "TOUS" && (
+                  <p className="text-xs text-[#999999] mb-2">
+                    {selected.categorie === "KIDS" ? "⭐ Affichage des élèves Kids uniquement" : "🥋 Affichage des élèves Adultes uniquement"}
+                  </p>
+                )}
                 <div className="relative mb-2">
                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aaaaaa]" />
                   <input

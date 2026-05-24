@@ -15,6 +15,7 @@ interface Eleve {
   ceinture: string;
   barrettes: number;
   actif: boolean;
+  categorie: string;
   dateInscription: string;
   presences: { date: string }[];
 }
@@ -40,10 +41,17 @@ const STATUTS = [
   { value: "inactif", label: "Inactifs" },
 ];
 
+const CATEGORIES = [
+  { value: "", label: "Tous" },
+  { value: "ADULTES", label: "🥋 Adultes" },
+  { value: "KIDS", label: "⭐ Kids" },
+];
+
 export default function ElevesList({ eleves, initialCeinture, initialStatut }: Props) {
   const [search, setSearch] = useState("");
   const [ceinture, setCeinture] = useState(initialCeinture);
   const [statut, setStatut] = useState(initialStatut);
+  const [categorie, setCategorie] = useState("");
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -51,6 +59,7 @@ export default function ElevesList({ eleves, initialCeinture, initialStatut }: P
       if (ceinture && e.ceinture !== ceinture) return false;
       if (statut === "actif" && !e.actif) return false;
       if (statut === "inactif" && e.actif) return false;
+      if (categorie && e.categorie !== categorie) return false;
       if (!q) return true;
       return (
         e.nom.toLowerCase().includes(q) ||
@@ -58,7 +67,7 @@ export default function ElevesList({ eleves, initialCeinture, initialStatut }: P
         (e.email?.toLowerCase().includes(q) ?? false)
       );
     });
-  }, [eleves, search, ceinture, statut]);
+  }, [eleves, search, ceinture, statut, categorie]);
 
   const selectClass = "border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm text-[#1a1a1a] focus:outline-none focus:border-[var(--color-primary)] bg-white";
 
@@ -85,7 +94,22 @@ export default function ElevesList({ eleves, initialCeinture, initialStatut }: P
         <select value={statut} onChange={(e) => setStatut(e.target.value)} className={selectClass}>
           {STATUTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
-        {(search || ceinture || statut) && (
+        <div className="flex items-center gap-1 border border-[#e5e5e5] rounded-[8px] p-1 bg-white">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.value}
+              onClick={() => setCategorie(c.value)}
+              className={`px-3 py-1 rounded-[6px] text-xs font-medium transition-colors ${
+                categorie === c.value
+                  ? "bg-[var(--color-primary)] text-white"
+                  : "text-[#666666] hover:bg-[#f5f5f5]"
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+        {(search || ceinture || statut || categorie) && (
           <span className="flex items-center text-xs text-[#666666] ml-1">
             {filtered.length} résultat{filtered.length !== 1 ? "s" : ""}
           </span>
@@ -110,9 +134,14 @@ export default function ElevesList({ eleves, initialCeinture, initialStatut }: P
                 className={`border-b border-[#e5e5e5] hover:bg-[var(--color-primary-bg)] transition-colors ${i % 2 === 0 ? "" : "bg-[#f9f9f9]"}`}
               >
                 <td className="px-4 py-3">
-                  <Link href={`/admin/eleves/${eleve.id}`} className="font-medium text-sm text-[#1a1a1a] hover:text-[var(--color-primary)]">
-                    {eleve.prenom} {eleve.nom}
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link href={`/admin/eleves/${eleve.id}`} className="font-medium text-sm text-[#1a1a1a] hover:text-[var(--color-primary)]">
+                      {eleve.prenom} {eleve.nom}
+                    </Link>
+                    {eleve.categorie === "KIDS" && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium flex-shrink-0">⭐ Kids</span>
+                    )}
+                  </div>
                   {eleve.email && <p className="text-xs text-[#666666]">{eleve.email}</p>}
                 </td>
                 <td className="px-4 py-3">

@@ -11,7 +11,7 @@ export default function NouvelElevePage() {
   const [copied, setCopied] = useState(false);
   const [form, setForm] = useState({
     nom: "", prenom: "", email: "", telephone: "",
-    dateNaissance: "", ceinture: "BLANCHE", barrettes: 0, notes: "",
+    dateNaissance: "", ceinture: "BLANCHE", barrettes: 0, categorie: "ADULTES", notes: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,7 +84,7 @@ export default function NouvelElevePage() {
               Retour à la liste
             </Link>
             <button
-              onClick={() => { setResultat(null); setForm({ nom: "", prenom: "", email: "", telephone: "", dateNaissance: "", ceinture: "BLANCHE", barrettes: 0, notes: "" }); }}
+              onClick={() => { setResultat(null); setForm({ nom: "", prenom: "", email: "", telephone: "", dateNaissance: "", ceinture: "BLANCHE", barrettes: 0, categorie: "ADULTES", notes: "" }); }}
               className="border border-[#e5e5e5] text-[#666666] rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[#f9f9f9] transition-colors"
             >
               Ajouter un autre élève
@@ -127,6 +127,18 @@ export default function NouvelElevePage() {
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Date de naissance</label>
             <input type="date" value={form.dateNaissance} onChange={set("dateNaissance")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Catégorie</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[{ v: "ADULTES", label: "🥋 Adultes", sub: "14 ans et +" }, { v: "KIDS", label: "⭐ Kids", sub: "8 à 13 ans" }].map(({ v, label, sub }) => (
+                <button key={v} type="button" onClick={() => setForm((f) => ({ ...f, categorie: v }))}
+                  className={`py-2 px-3 rounded-[8px] border-2 text-left transition-colors ${form.categorie === v ? "border-[var(--color-primary)] bg-[var(--color-primary-subtle)]" : "border-[#e5e5e5] hover:border-[#cccccc]"}`}>
+                  <p className={`text-sm font-semibold ${form.categorie === v ? "text-[var(--color-primary)]" : "text-[#1a1a1a]"}`}>{label}</p>
+                  <p className="text-[10px] text-[#999999]">{sub}</p>
+                </button>
+              ))}
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Ceinture</label>

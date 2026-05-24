@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { nom, prenom, email, telephone, dateNaissance, ceinture, barrettes, notes } = body;
+  const { nom, prenom, email, telephone, dateNaissance, ceinture, barrettes, categorie, notes } = body;
 
   if (!nom || !prenom) {
     return NextResponse.json({ error: "Nom et prénom requis" }, { status: 400 });
@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
       dateNaissance: dateNaissance ? new Date(dateNaissance) : null,
       ceinture: ceinture || "BLANCHE",
       barrettes: barrettes ?? 0,
+      categorie: categorie || "ADULTES",
       notes: notes || null,
     },
   });

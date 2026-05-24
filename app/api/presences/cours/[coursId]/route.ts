@@ -12,7 +12,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cou
 
   const presences = await prisma.presence.findMany({
     where: { coursId },
-    include: { eleve: { select: { id: true, nom: true, prenom: true, ceinture: true, barrettes: true } } },
+    include: { eleve: { select: { id: true, nom: true, prenom: true, ceinture: true, barrettes: true, categorie: true } } },
     orderBy: { eleve: { nom: "asc" } },
   });
 
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cou
 
   const presence = await prisma.presence.create({
     data: { eleveId, coursId },
-    include: { eleve: { select: { id: true, nom: true, prenom: true, ceinture: true, barrettes: true } } },
+    include: { eleve: { select: { id: true, nom: true, prenom: true, ceinture: true, barrettes: true, categorie: true } } },
   });
 
   return NextResponse.json(presence, { status: 201 });

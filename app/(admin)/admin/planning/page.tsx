@@ -12,9 +12,10 @@ interface Cours {
   titre: string | null;
   recurrent: boolean;
   annule: boolean;
+  categorie: string;
 }
 
-type FormState = { type: string; jour: number; heureDebut: string; duree: number; titre: string; recurrent: boolean };
+type FormState = { type: string; jour: number; heureDebut: string; duree: number; titre: string; recurrent: boolean; categorie: string };
 
 const JOURS_ORDERED = [1, 2, 3, 4, 5, 6, 0];
 const JOURS_LABELS: Record<number, string> = { 0: "Dimanche", 1: "Lundi", 2: "Mardi", 3: "Mercredi", 4: "Jeudi", 5: "Vendredi", 6: "Samedi" };
@@ -47,7 +48,7 @@ const formatDuree = (min: number) => {
   return m ? `${h}h${m}` : `${h}h`;
 };
 
-const DEFAULT_FORM: FormState = { type: "GI", jour: 1, heureDebut: "19:00", duree: 90, titre: "", recurrent: true };
+const DEFAULT_FORM: FormState = { type: "GI", jour: 1, heureDebut: "19:00", duree: 90, titre: "", recurrent: true, categorie: "TOUS" };
 
 export default function PlanningPage() {
   const [cours, setCours] = useState<Cours[]>([]);
@@ -77,7 +78,7 @@ export default function PlanningPage() {
 
   const openEdit = (c: Cours) => {
     setEditId(c.id);
-    setForm({ type: c.type, jour: c.jour, heureDebut: c.heureDebut, duree: c.duree, titre: c.titre ?? "", recurrent: c.recurrent });
+    setForm({ type: c.type, jour: c.jour, heureDebut: c.heureDebut, duree: c.duree, titre: c.titre ?? "", recurrent: c.recurrent, categorie: c.categorie ?? "TOUS" });
     setShowForm(true);
   };
 
@@ -358,6 +359,26 @@ export default function PlanningPage() {
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="recurrent" checked={form.recurrent} onChange={set("recurrent")} className="accent-[var(--color-primary)]" />
                 <label htmlFor="recurrent" className="text-sm text-[#1a1a1a]">Cours récurrent (toutes les semaines)</label>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-[#666666] mb-1">Catégorie d&apos;élèves</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[{ v: "TOUS", label: "Tous" }, { v: "ADULTES", label: "🥋 Adultes" }, { v: "KIDS", label: "⭐ Kids" }].map(({ v, label }) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, categorie: v }))}
+                      className={`py-2 px-3 rounded-[8px] border-2 text-center text-sm font-medium transition-colors ${
+                        form.categorie === v
+                          ? "border-[var(--color-primary)] bg-[var(--color-primary-subtle)] text-[var(--color-primary)]"
+                          : "border-[#e5e5e5] text-[#666666] hover:border-[#cccccc]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div
