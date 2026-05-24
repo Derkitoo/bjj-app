@@ -50,7 +50,7 @@ const formatDuree = (min: number) => {
   return m ? `${h}h${m}` : `${h}h`;
 };
 
-const DEFAULT_FORM: FormState = { type: "GI", jour: 1, heureDebut: "19:00", duree: 90, titre: "", recurrent: true, categorie: "TOUS" };
+const DEFAULT_FORM: FormState = { type: "GI", jour: 1, heureDebut: "19:00", duree: 120, titre: "", recurrent: true, categorie: "TOUS" };
 
 export default function PlanningPage() {
   const [cours, setCours] = useState<Cours[]>([]);
