@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 
 interface FormData {
   nom: string; prenom: string; email: string; telephone: string;
@@ -27,6 +27,7 @@ export default function ModifierElevePage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
+  const [confirmSuppr, setConfirmSuppr] = useState(false);
 
   useEffect(() => {
     fetch(`/api/eleves/${id}`)
@@ -78,6 +79,11 @@ export default function ModifierElevePage() {
     }
 
     router.push(`/admin/eleves/${id}`);
+  };
+
+  const archiver = async () => {
+    await fetch(`/api/eleves/${id}`, { method: "DELETE" });
+    router.push("/admin/eleves");
   };
 
   if (fetching) return <div className="text-sm text-[#666666]">Chargement...</div>;
@@ -211,13 +217,34 @@ export default function ModifierElevePage() {
         </div>
 
         {error && <p className="text-[#ef4444] text-sm">{error}</p>}
-        <div className="flex gap-3 pb-6">
-          <button type="submit" disabled={loading} className="bg-[#cc0000] text-white rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[#aa0000] disabled:opacity-50 transition-colors">
-            {loading ? "Enregistrement..." : "Enregistrer"}
-          </button>
-          <Link href={`/admin/eleves/${id}`} className="border border-[#e5e5e5] text-[#666666] rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[#f9f9f9] transition-colors">
-            Annuler
-          </Link>
+        <div className="flex items-center justify-between pb-6">
+          <div className="flex gap-3">
+            <button type="submit" disabled={loading} className="bg-[#cc0000] text-white rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[#aa0000] disabled:opacity-50 transition-colors">
+              {loading ? "Enregistrement..." : "Enregistrer"}
+            </button>
+            <Link href={`/admin/eleves/${id}`} className="border border-[#e5e5e5] text-[#666666] rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[#f9f9f9] transition-colors">
+              Annuler
+            </Link>
+          </div>
+          {!confirmSuppr ? (
+            <button type="button" onClick={() => setConfirmSuppr(true)}
+              className="flex items-center gap-2 text-sm text-[#666666] hover:text-[#ef4444] transition-colors">
+              <Trash2 size={15} />
+              Désactiver l&apos;élève
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[#ef4444]">Confirmer ?</span>
+              <button type="button" onClick={archiver}
+                className="bg-[#ef4444] text-white rounded-[8px] px-3 py-1.5 text-sm font-medium hover:bg-[#dc2626] transition-colors">
+                Oui, désactiver
+              </button>
+              <button type="button" onClick={() => setConfirmSuppr(false)}
+                className="text-sm text-[#666666] hover:text-[#1a1a1a]">
+                Annuler
+              </button>
+            </div>
+          )}
         </div>
       </form>
     </div>
