@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { QrCode, Users, CheckCircle } from "lucide-react";
+import Link from "next/link";
+import { QrCode, Users, CheckCircle, BarChart2 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -76,7 +77,16 @@ export default function PresencePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-[#1a1a1a] mb-6">Présence</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-[#1a1a1a]">Présence</h1>
+        <Link
+          href="/admin/presence/cours"
+          className="flex items-center gap-2 border border-[#e5e5e5] text-[#666666] rounded-[8px] px-4 py-2 text-sm font-medium hover:bg-[#f9f9f9] transition-colors"
+        >
+          <BarChart2 size={15} />
+          Par cours
+        </Link>
+      </div>
 
       <div className="bg-white rounded-[12px] shadow-sm p-5 mb-5">
         <label className="block text-sm font-medium text-[#1a1a1a] mb-2">Sélectionner le cours</label>

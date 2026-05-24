@@ -11,6 +11,7 @@ interface FormData {
   poids: string; taille: string; adresse: string; ville: string;
   codePostal: string; contactUrgence: string; telUrgence: string;
   niveauSport: string; objectifs: string; medical: string;
+  montantMensuel: string; typeAbonnement: string;
 }
 
 const defaultForm: FormData = {
@@ -18,6 +19,7 @@ const defaultForm: FormData = {
   ceinture: "BLANCHE", barrettes: 0, notes: "", actif: true,
   poids: "", taille: "", adresse: "", ville: "", codePostal: "",
   contactUrgence: "", telUrgence: "", niveauSport: "", objectifs: "", medical: "",
+  montantMensuel: "", typeAbonnement: "MENSUEL",
 };
 
 export default function ModifierElevePage() {
@@ -53,6 +55,8 @@ export default function ModifierElevePage() {
           niveauSport: eleve.niveauSport ?? "",
           objectifs: eleve.objectifs ?? "",
           medical: eleve.medical ?? "",
+          montantMensuel: eleve.montantMensuel != null ? String(eleve.montantMensuel) : "",
+          typeAbonnement: eleve.typeAbonnement ?? "MENSUEL",
         });
         setFetching(false);
       });
@@ -212,6 +216,32 @@ export default function ModifierElevePage() {
             <div>
               <label className={labelClass}>Téléphone</label>
               <input value={form.telUrgence} onChange={set("telUrgence")} className={inputClass} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-[12px] shadow-sm p-6 space-y-4">
+          <h2 className="font-semibold text-[#1a1a1a] border-b border-[#e5e5e5] pb-3">Abonnement &amp; Tarif</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Type d&apos;abonnement</label>
+              <select value={form.typeAbonnement} onChange={set("typeAbonnement")} className={inputClass}>
+                <option value="MENSUEL">Mensuel</option>
+                <option value="ANNUEL">Annuel</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Tarif personnalisé (€/mois)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.montantMensuel}
+                onChange={set("montantMensuel")}
+                placeholder="Tarif par défaut"
+                className={inputClass + " placeholder:text-[#aaaaaa]"}
+              />
+              <p className="text-xs text-[#aaaaaa] mt-1">Laisser vide pour utiliser le tarif standard</p>
             </div>
           </div>
         </div>

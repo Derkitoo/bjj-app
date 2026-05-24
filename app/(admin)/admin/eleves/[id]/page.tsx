@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, Pencil, FileText } from "lucide-react";
 import CeintureBadge from "@/components/CeintureBadge";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -32,6 +32,13 @@ export default async function EleveDetailPage({ params }: { params: Promise<{ id
         <h1 className="text-2xl font-bold text-[#1a1a1a] flex-1">
           {eleve.prenom} {eleve.nom}
         </h1>
+        <Link
+          href={`/admin/eleves/${eleve.id}/justificatif`}
+          className="flex items-center gap-2 border border-[#e5e5e5] text-[#666666] rounded-[8px] px-4 py-2 text-sm font-medium hover:bg-[#f9f9f9] transition-colors"
+        >
+          <FileText size={14} />
+          Justificatif
+        </Link>
         <Link
           href={`/admin/eleves/${eleve.id}/modifier`}
           className="flex items-center gap-2 border border-[#cc0000] text-[#cc0000] rounded-[8px] px-4 py-2 text-sm font-medium hover:bg-[#cc0000] hover:text-white transition-colors"

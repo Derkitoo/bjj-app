@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
   const paiements = await prisma.paiement.findMany({
     where,
-    include: { eleve: { select: { nom: true, prenom: true, actif: true } } },
+    include: { eleve: { select: { nom: true, prenom: true, actif: true, montantMensuel: true, typeAbonnement: true } } },
     orderBy: [{ annee: "desc" }, { mois: "desc" }, { eleve: { nom: "asc" } }],
   });
 
@@ -32,13 +32,28 @@ export async function POST(req: NextRequest) {
   const { mois, annee, montant } = await req.json();
   if (!mois || !annee) return NextResponse.json({ error: "mois et annee requis" }, { status: 400 });
 
-  const eleveActifs = await prisma.eleve.findMany({ where: { actif: true }, select: { id: true } });
+  const montantDefaut = montant ?? 50;
+
+  const eleveActifs = await prisma.eleve.findMany({
+    where: { actif: true },
+    select: { id: true, montantMensuel: true, typeAbonnement: true },
+  });
 
   let created = 0;
   for (const eleve of eleveActifs) {
-    const existing = await prisma.paiement.findUnique({ where: { eleveId_mois_annee: { eleveId: eleve.id, mois, annee } } });
+    const estAnnuel = eleve.typeAbonnement === "ANNUEL";
+    if (estAnnuel && mois !== 1) continue;
+
+    const montantEleve = eleve.montantMensuel ?? montantDefaut;
+    const montantFinal = estAnnuel ? montantEleve * 12 : montantEleve;
+
+    const existing = await prisma.paiement.findUnique({
+      where: { eleveId_mois_annee: { eleveId: eleve.id, mois, annee } },
+    });
     if (!existing) {
-      await prisma.paiement.create({ data: { eleveId: eleve.id, mois, annee, montant: montant ?? 50, statut: "EN_ATTENTE" } });
+      await prisma.paiement.create({
+        data: { eleveId: eleve.id, mois, annee, montant: montantFinal, statut: "EN_ATTENTE" },
+      });
       created++;
     }
   }

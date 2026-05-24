@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, X, Clock, Trash2 } from "lucide-react";
+import { Plus, X, Clock, Trash2, Pencil } from "lucide-react";
 
 interface Cours {
   id: string;
@@ -13,6 +13,8 @@ interface Cours {
   recurrent: boolean;
   annule: boolean;
 }
+
+type FormState = { type: string; jour: number; heureDebut: string; duree: number; titre: string; recurrent: boolean };
 
 const JOURS_ORDERED = [1, 2, 3, 4, 5, 6, 0];
 const JOURS_LABELS: Record<number, string> = { 0: "Dimanche", 1: "Lundi", 2: "Mardi", 3: "Mercredi", 4: "Jeudi", 5: "Vendredi", 6: "Samedi" };
@@ -45,10 +47,13 @@ const formatDuree = (min: number) => {
   return m ? `${h}h${m}` : `${h}h`;
 };
 
+const DEFAULT_FORM: FormState = { type: "GI", jour: 1, heureDebut: "19:00", duree: 90, titre: "", recurrent: true };
+
 export default function PlanningPage() {
   const [cours, setCours] = useState<Cours[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ type: "GI", jour: 1, heureDebut: "19:00", duree: 90, titre: "", recurrent: true });
+  const [editId, setEditId] = useState<string | null>(null);
+  const [form, setForm] = useState<FormState>(DEFAULT_FORM);
 
   useEffect(() => {
     fetch("/api/cours").then((r) => r.json()).then(setCours);
@@ -64,17 +69,41 @@ export default function PlanningPage() {
         : e.target.value,
     }));
 
-  const creer = async (e: React.FormEvent) => {
+  const openCreate = () => {
+    setEditId(null);
+    setForm(DEFAULT_FORM);
+    setShowForm(true);
+  };
+
+  const openEdit = (c: Cours) => {
+    setEditId(c.id);
+    setForm({ type: c.type, jour: c.jour, heureDebut: c.heureDebut, duree: c.duree, titre: c.titre ?? "", recurrent: c.recurrent });
+    setShowForm(true);
+  };
+
+  const closeForm = () => { setShowForm(false); setEditId(null); };
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch("/api/cours", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    setCours((prev) => [...prev, data]);
-    setShowForm(false);
-    setForm({ type: "GI", jour: 1, heureDebut: "19:00", duree: 90, titre: "", recurrent: true });
+    if (editId) {
+      const res = await fetch(`/api/cours/${editId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      setCours((prev) => prev.map((c) => (c.id === editId ? data : c)));
+    } else {
+      const res = await fetch("/api/cours", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      setCours((prev) => [...prev, data]);
+    }
+    closeForm();
+    if (!editId) setForm(DEFAULT_FORM);
   };
 
   const supprimer = async (id: string) => {
@@ -94,7 +123,7 @@ export default function PlanningPage() {
           <p className="text-sm text-[#666666] mt-0.5">{totalCours} cours par semaine</p>
         </div>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={openCreate}
           className="flex items-center gap-2 bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
         >
           <Plus size={16} />
@@ -142,10 +171,10 @@ export default function PlanningPage() {
                         </p>
                         {c.titre && <p className="text-xs text-[#999999] mt-0.5">{c.titre}</p>}
                       </div>
-                      <button
-                        onClick={() => supprimer(c.id)}
-                        className="text-[#cccccc] hover:text-red-500 transition-colors p-1 flex-shrink-0"
-                      >
+                      <button onClick={() => openEdit(c)} className="text-[#cccccc] hover:text-[var(--color-primary)] transition-colors p-1 flex-shrink-0">
+                        <Pencil size={14} />
+                      </button>
+                      <button onClick={() => supprimer(c.id)} className="text-[#cccccc] hover:text-red-500 transition-colors p-1 flex-shrink-0">
                         <Trash2 size={15} />
                       </button>
                     </div>
@@ -249,14 +278,24 @@ export default function PlanningPage() {
                             </p>
                           )}
                         </div>
-                        <button
-                          onClick={() => supprimer(c.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 rounded p-0.5 hover:bg-black/10 mt-0.5"
-                          style={{ color: s.text }}
-                          title="Supprimer"
-                        >
-                          <Trash2 size={10} />
-                        </button>
+                        <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
+                          <button
+                            onClick={() => openEdit(c)}
+                            className="rounded p-0.5 hover:bg-black/10"
+                            style={{ color: s.text }}
+                            title="Modifier"
+                          >
+                            <Pencil size={9} />
+                          </button>
+                          <button
+                            onClick={() => supprimer(c.id)}
+                            className="rounded p-0.5 hover:bg-black/10"
+                            style={{ color: s.text }}
+                            title="Supprimer"
+                          >
+                            <Trash2 size={10} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -267,24 +306,24 @@ export default function PlanningPage() {
         </div>
       </div>
 
-      {/* ── Modal ajout ── */}
+      {/* ── Modal créer / modifier ── */}
       {showForm && (
         <div
           className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50"
-          onClick={() => setShowForm(false)}
+          onClick={closeForm}
         >
           <div
             className="bg-white rounded-t-[20px] sm:rounded-[12px] p-6 w-full sm:max-w-md shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-bold text-[#1a1a1a]">Nouveau cours</h2>
-              <button onClick={() => setShowForm(false)} className="text-[#666666] hover:text-[#1a1a1a]">
+              <h2 className="font-bold text-[#1a1a1a]">{editId ? "Modifier le cours" : "Nouveau cours"}</h2>
+              <button onClick={closeForm} className="text-[#666666] hover:text-[#1a1a1a]">
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={creer} className="space-y-4">
+            <form onSubmit={submit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#666666] mb-1">Type</label>
@@ -331,7 +370,7 @@ export default function PlanningPage() {
               </div>
 
               <button type="submit" className="w-full bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors">
-                Créer le cours
+                {editId ? "Enregistrer les modifications" : "Créer le cours"}
               </button>
             </form>
           </div>
