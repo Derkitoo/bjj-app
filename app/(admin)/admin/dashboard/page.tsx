@@ -5,12 +5,12 @@ import Link from "next/link";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
 
-const CEINTURE_COLORS: Record<string, string> = {
-  BLANCHE: "bg-gray-100 border border-gray-300",
-  BLEUE: "bg-blue-500",
-  VIOLETTE: "bg-purple-500",
-  MARRON: "bg-amber-800",
-  NOIRE: "bg-gray-900",
+const CEINTURE_COLORS: Record<string, { bg: string; border?: string }> = {
+  BLANCHE: { bg: "#f3f4f6", border: "#d1d5db" },
+  BLEUE:   { bg: "#1d4ed8" },
+  VIOLETTE:{ bg: "#7c3aed" },
+  MARRON:  { bg: "#92400e" },
+  NOIRE:   { bg: "#111111" },
 };
 
 export default async function DashboardPage() {
@@ -145,7 +145,8 @@ export default async function DashboardPage() {
               const pct = totalEleves > 0 ? Math.round((count / totalEleves) * 100) : 0;
               return (
                 <div key={belt} className="flex items-center gap-3">
-                  <span className={`w-3 h-3 rounded-full flex-shrink-0 ${CEINTURE_COLORS[belt]}`} />
+                  <span className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: CEINTURE_COLORS[belt].bg, border: CEINTURE_COLORS[belt].border ? `1px solid ${CEINTURE_COLORS[belt].border}` : undefined }} />
                   <span className="text-xs text-[#666666] w-16 capitalize">{belt.toLowerCase()}</span>
                   <div className="flex-1 bg-[#e5e5e5] rounded-full h-2">
                     <div className="bg-[#cc0000] h-2 rounded-full" style={{ width: `${pct}%` }} />
