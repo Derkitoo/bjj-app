@@ -6,6 +6,7 @@ import { fr } from "date-fns/locale";
 import {
   Plus, X, Check, AlertCircle, Clock, ChevronRight,
   Users, RefreshCw, Pencil, Trash2, Tag, Search,
+  Eye, EyeOff, Settings,
 } from "lucide-react";
 import CeintureBadge from "@/components/CeintureBadge";
 
@@ -74,6 +75,16 @@ const MODES_PAIEMENT = [
   { value: "cb",       label: "CB" },
 ];
 
+/* ── Sections masquables ── */
+const SECTIONS_CONFIG = [
+  { id: "kpis",       label: "Indicateurs (KPIs)" },
+  { id: "progression",label: "Barre de recouvrement" },
+  { id: "filtres",    label: "Barre de recherche" },
+  { id: "tableau",    label: "Tableau des cotisations" },
+];
+const DEFAULT_VISIBLE = Object.fromEntries(SECTIONS_CONFIG.map((s) => [s.id, true]));
+const LS_KEY = "paiements_sections";
+
 function EcheanceDots({ echeances }: { echeances: Echeance[] }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -120,6 +131,24 @@ export default function PaiementsPage() {
   });
   const [creating, setCreating] = useState(false);
   const [createResult, setCreateResult] = useState<{ created: number; skipped: number } | null>(null);
+
+  /* ── Visibilité sections ── */
+  const [visible, setVisible] = useState<Record<string, boolean>>(DEFAULT_VISIBLE);
+  const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved) { try { setVisible({ ...DEFAULT_VISIBLE, ...JSON.parse(saved) }); } catch { /* ignore */ } }
+  }, []);
+
+  const toggleSection = (id: string) => {
+    setVisible((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      localStorage.setItem(LS_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+  const show = (id: string) => visible[id] !== false;
 
   const load = useCallback(() => {
     setLoading(true);
@@ -237,18 +266,27 @@ export default function PaiementsPage() {
   const inputClass = "border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)] bg-white w-full";
 
   return (
-    <div>
+    <div className="max-w-5xl mx-auto">
       {/* ── Header ── */}
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-2xl font-bold text-[#1a1a1a]">Cotisations</h1>
-        <button
-          onClick={() => { setShowCreate(true); setCreateResult(null); }}
-          className="flex items-center gap-2 bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
-        >
-          <Plus size={15} />
-          <span className="hidden sm:inline">Créer cotisations</span>
-          <span className="sm:hidden">Créer</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowSettings(true)}
+            className="flex items-center gap-2 text-sm border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-[#666666] hover:bg-[#f9f9f9] transition-colors"
+          >
+            <Settings size={14} />
+            <span className="hidden sm:inline">Personnaliser</span>
+          </button>
+          <button
+            onClick={() => { setShowCreate(true); setCreateResult(null); }}
+            className="flex items-center gap-2 bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
+          >
+            <Plus size={15} />
+            <span className="hidden sm:inline">Créer cotisations</span>
+            <span className="sm:hidden">Créer</span>
+          </button>
+        </div>
       </div>
 
       {/* ── Saison tabs ── */}
@@ -272,148 +310,167 @@ export default function PaiementsPage() {
       </div>
 
       {/* ── KPIs ── */}
-      {cotisations.length > 0 && (
-        <div className="mb-5 space-y-3">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-white rounded-[12px] shadow-sm p-4">
-              <p className="text-xs text-[#666666]">Inscrits</p>
-              <p className="text-2xl font-bold text-[#1a1a1a] mt-1">{cotisations.length}</p>
-              <p className="text-xs text-[#999999] mt-0.5">{nbComplet} complet{nbComplet > 1 ? "s" : ""}</p>
-            </div>
-            <div className="bg-white rounded-[12px] shadow-sm p-4">
-              <p className="text-xs text-[#666666]">Total attendu</p>
-              <p className="text-2xl font-bold text-[#1a1a1a] mt-1">{totalAttendu.toFixed(0)} €</p>
-            </div>
-            <div className="bg-white rounded-[12px] shadow-sm p-4">
-              <p className="text-xs text-[#666666]">Encaissé</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">{totalEncaisse.toFixed(0)} €</p>
-              <p className="text-xs text-[#999999] mt-0.5">{pct}% du total</p>
-            </div>
-            <div className="bg-white rounded-[12px] shadow-sm p-4">
-              <p className="text-xs text-[#666666]">En retard</p>
-              <p className={`text-2xl font-bold mt-1 ${nbRetard > 0 ? "text-red-600" : "text-[#999999]"}`}>{nbRetard}</p>
-              <p className="text-xs text-[#999999] mt-0.5">élève{nbRetard > 1 ? "s" : ""}</p>
-            </div>
+      {show("kpis") && cotisations.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <div className="bg-white rounded-[12px] shadow-sm p-4">
+            <p className="text-xs text-[#666666]">Inscrits</p>
+            <p className="text-2xl font-bold text-[#1a1a1a] mt-1">{cotisations.length}</p>
+            <p className="text-xs text-[#999999] mt-0.5">{nbComplet} complet{nbComplet > 1 ? "s" : ""}</p>
           </div>
-          <div className="bg-white rounded-[12px] shadow-sm p-3">
-            <div className="flex items-center justify-between text-xs text-[#666666] mb-1.5">
-              <span>Taux de recouvrement</span>
-              <span className="font-semibold text-[#1a1a1a]">{pct}%</span>
-            </div>
-            <div className="h-2.5 bg-[#f0f0f0] rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${pct}%`, backgroundColor: pct >= 80 ? "#22c55e" : pct >= 50 ? "var(--color-primary)" : "#f97316" }}
-              />
-            </div>
+          <div className="bg-white rounded-[12px] shadow-sm p-4">
+            <p className="text-xs text-[#666666]">Total attendu</p>
+            <p className="text-2xl font-bold text-[#1a1a1a] mt-1">{totalAttendu.toFixed(0)} €</p>
+          </div>
+          <div className="bg-white rounded-[12px] shadow-sm p-4">
+            <p className="text-xs text-[#666666]">Encaissé</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">{totalEncaisse.toFixed(0)} €</p>
+            <p className="text-xs text-[#999999] mt-0.5">{pct}% du total</p>
+          </div>
+          <div className="bg-white rounded-[12px] shadow-sm p-4">
+            <p className="text-xs text-[#666666]">En retard</p>
+            <p className={`text-2xl font-bold mt-1 ${nbRetard > 0 ? "text-red-600" : "text-[#999999]"}`}>{nbRetard}</p>
+            <p className="text-xs text-[#999999] mt-0.5">élève{nbRetard > 1 ? "s" : ""}</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Progression ── */}
+      {show("progression") && cotisations.length > 0 && (
+        <div className="bg-white rounded-[12px] shadow-sm p-3 mb-4">
+          <div className="flex items-center justify-between text-xs text-[#666666] mb-1.5">
+            <span>Taux de recouvrement</span>
+            <span className="font-semibold text-[#1a1a1a]">{pct}%</span>
+          </div>
+          <div className="h-2.5 bg-[#f0f0f0] rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${pct}%`, backgroundColor: pct >= 80 ? "#22c55e" : pct >= 50 ? "var(--color-primary)" : "#f97316" }}
+            />
+          </div>
+          <div className="flex justify-between text-[10px] text-[#aaaaaa] mt-1">
+            <span>0 €</span>
+            <span>{totalEncaisse.toFixed(0)} € encaissés sur {totalAttendu.toFixed(0)} €</span>
           </div>
         </div>
       )}
 
       {/* ── Filtres ── */}
-      <div className="flex flex-wrap gap-3 mb-4">
-        <div className="relative flex-1 min-w-[180px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aaaaaa]" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un élève..."
-            className="w-full border border-[#e5e5e5] rounded-[8px] pl-9 pr-3 py-2 text-sm bg-white focus:outline-none focus:border-[var(--color-primary)] placeholder:text-[#aaaaaa]"
-          />
-        </div>
-        <select value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)}
-          className="border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm bg-white focus:outline-none focus:border-[var(--color-primary)]">
-          <option value="">Tous les statuts</option>
-          {Object.entries(STATUT_CONFIG).map(([k, v]) => (
-            <option key={k} value={k}>{v.label}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* ── Table / Empty state ── */}
-      {loading ? (
-        <div className="bg-white rounded-[12px] shadow-sm p-12 text-center">
-          <div className="w-8 h-8 border-4 border-[var(--color-primary-subtle)] border-t-[var(--color-primary)] rounded-full animate-spin mx-auto" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="bg-white rounded-[12px] shadow-sm p-12 text-center">
-          <Users size={40} className="mx-auto mb-3 text-[#e5e5e5]" />
-          <p className="text-sm text-[#666666]">Aucune cotisation pour la saison {saison}</p>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="mt-3 text-sm text-[var(--color-primary)] hover:underline"
+      {show("filtres") && (
+        <div className="flex flex-wrap gap-3 mb-4">
+          <div className="relative flex-1 min-w-[180px]">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aaaaaa]" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher un élève..."
+              className="w-full border border-[#e5e5e5] rounded-[8px] pl-9 pr-3 py-2 text-sm bg-white focus:outline-none focus:border-[var(--color-primary)] placeholder:text-[#aaaaaa]"
+            />
+          </div>
+          <select
+            value={filtreStatut}
+            onChange={(e) => setFiltreStatut(e.target.value)}
+            className="border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm bg-white focus:outline-none focus:border-[var(--color-primary)]"
           >
-            Créer les cotisations →
-          </button>
+            <option value="">Tous les statuts</option>
+            {Object.entries(STATUT_CONFIG).map(([k, v]) => (
+              <option key={k} value={k}>{v.label}</option>
+            ))}
+          </select>
         </div>
-      ) : (
-        <div className="bg-white rounded-[12px] shadow-sm overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[#e5e5e5]">
-                <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Élève</th>
-                <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3 hidden sm:table-cell">Montant</th>
-                <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3 hidden md:table-cell">Mode</th>
-                <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Échéances</th>
-                <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Statut</th>
-                <th className="px-4 py-3 w-10" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c, i) => {
-                const sc = STATUT_CONFIG[c.statut] ?? STATUT_CONFIG.EN_ATTENTE;
-                const Icon = sc.icon;
-                const hasReduc = c.reductionRenouvellement > 0 || c.reductionFamille > 0 || c.reductionManuelle > 0;
-                return (
-                  <tr
-                    key={c.id}
-                    className={`border-b border-[#f5f5f5] hover:bg-[var(--color-primary-bg)] transition-colors cursor-pointer ${i % 2 === 0 ? "" : "bg-[#fafafa]"}`}
-                    onClick={() => setSelected(c)}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div>
-                          <p className="text-sm font-medium text-[#1a1a1a]">{c.eleve.prenom} {c.eleve.nom}</p>
-                          {c.eleve.nomFamille && (
-                            <p className="text-xs text-[#999999] flex items-center gap-1">
-                              <Tag size={9} />
-                              {c.eleve.nomFamille}
-                            </p>
-                          )}
+      )}
+
+      {/* ── Tableau ── */}
+      {show("tableau") && (
+        loading ? (
+          <div className="bg-white rounded-[12px] shadow-sm p-12 text-center">
+            <div className="w-8 h-8 border-4 border-[var(--color-primary-subtle)] border-t-[var(--color-primary)] rounded-full animate-spin mx-auto" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-white rounded-[12px] shadow-sm p-12 text-center">
+            <Users size={40} className="mx-auto mb-3 text-[#e5e5e5]" />
+            <p className="text-sm text-[#666666]">Aucune cotisation pour la saison {saison}</p>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="mt-3 text-sm text-[var(--color-primary)] hover:underline"
+            >
+              Créer les cotisations →
+            </button>
+          </div>
+        ) : (
+          <div className="bg-white rounded-[12px] shadow-sm overflow-hidden">
+            <div className="px-4 py-2.5 border-b border-[#f5f5f5] flex items-center justify-between">
+              <p className="text-xs text-[#999999]">
+                {filtered.length} cotisation{filtered.length > 1 ? "s" : ""}
+                {search || filtreStatut ? ` (filtrée${filtered.length > 1 ? "s" : ""})` : ""}
+              </p>
+            </div>
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#e5e5e5]">
+                  <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Élève</th>
+                  <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3 hidden sm:table-cell">Montant</th>
+                  <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3 hidden md:table-cell">Mode</th>
+                  <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Échéances</th>
+                  <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Statut</th>
+                  <th className="px-4 py-3 w-10" />
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((c, i) => {
+                  const sc = STATUT_CONFIG[c.statut] ?? STATUT_CONFIG.EN_ATTENTE;
+                  const Icon = sc.icon;
+                  const hasReduc = c.reductionRenouvellement > 0 || c.reductionFamille > 0 || c.reductionManuelle > 0;
+                  return (
+                    <tr
+                      key={c.id}
+                      className={`border-b border-[#f5f5f5] hover:bg-[var(--color-primary-bg)] transition-colors cursor-pointer ${i % 2 === 0 ? "" : "bg-[#fafafa]"}`}
+                      onClick={() => setSelected(c)}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <p className="text-sm font-medium text-[#1a1a1a]">{c.eleve.prenom} {c.eleve.nom}</p>
+                            {c.eleve.nomFamille && (
+                              <p className="text-xs text-[#999999] flex items-center gap-1">
+                                <Tag size={9} />
+                                {c.eleve.nomFamille}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 hidden sm:table-cell">
-                      <div className="text-sm font-semibold text-[#1a1a1a]">{c.montantTotal.toFixed(0)} €</div>
-                      {hasReduc && (
-                        <div className="text-[10px] text-green-600 mt-0.5">
-                          -{(c.reductionRenouvellement + c.reductionFamille + c.reductionManuelle).toFixed(0)} €
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <span className="text-xs font-medium text-[#666666] bg-[#f0f0f0] px-2 py-0.5 rounded-full">
-                        {c.nbEcheances}×
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <EcheanceDots echeances={c.echeances} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${sc.bg} ${sc.color}`}>
-                        <Icon size={11} />
-                        {sc.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <ChevronRight size={15} className="text-[#cccccc] ml-auto" />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <div className="text-sm font-semibold text-[#1a1a1a]">{c.montantTotal.toFixed(0)} €</div>
+                        {hasReduc && (
+                          <div className="text-[10px] text-green-600 mt-0.5">
+                            -{(c.reductionRenouvellement + c.reductionFamille + c.reductionManuelle).toFixed(0)} €
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        <span className="text-xs font-medium text-[#666666] bg-[#f0f0f0] px-2 py-0.5 rounded-full">
+                          {c.nbEcheances}×
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <EcheanceDots echeances={c.echeances} />
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${sc.bg} ${sc.color}`}>
+                          <Icon size={11} />
+                          {sc.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <ChevronRight size={15} className="text-[#cccccc] ml-auto" />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )
       )}
 
       {/* ── Modal détail cotisation ── */}
@@ -423,7 +480,6 @@ export default function PaiementsPage() {
             className="bg-white rounded-t-[20px] sm:rounded-[16px] w-full sm:max-w-lg max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex items-start justify-between p-5 border-b border-[#f0f0f0] sticky top-0 bg-white z-10">
               <div>
                 <p className="font-bold text-[#1a1a1a]">{selected.eleve.prenom} {selected.eleve.nom}</p>
@@ -446,7 +502,6 @@ export default function PaiementsPage() {
               </div>
             </div>
 
-            {/* Montant breakdown */}
             <div className="px-5 pt-4 pb-3">
               <div className="bg-[#f9f9f9] rounded-[12px] p-4 space-y-2">
                 <div className="flex justify-between text-sm">
@@ -487,7 +542,6 @@ export default function PaiementsPage() {
               </div>
             </div>
 
-            {/* Échéances */}
             <div className="px-5 pb-2">
               <p className="text-xs font-semibold text-[#999999] uppercase tracking-wider mb-3">
                 Échéances ({selected.nbEcheances}×{(selected.montantTotal / selected.nbEcheances).toFixed(2)} €)
@@ -506,7 +560,9 @@ export default function PaiementsPage() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-[#666666]">{e.numero}ère{e.numero > 1 ? " (2ème/3ème)" : ""} échéance</span>
+                            <span className="text-xs font-bold text-[#666666]">
+                              {e.numero === 1 ? "1ère" : `${e.numero}ème`} échéance
+                            </span>
                             <span className="text-sm font-bold text-[#1a1a1a]">{e.montant.toFixed(2)} €</span>
                           </div>
                           <p className="text-xs text-[#999999] mt-0.5">
@@ -579,7 +635,6 @@ export default function PaiementsPage() {
             </div>
 
             <div className="p-5 space-y-5">
-              {/* Mode */}
               <div className="grid grid-cols-2 gap-2">
                 {(["bulk", "individuel"] as const).map((m) => (
                   <button
@@ -596,7 +651,6 @@ export default function PaiementsPage() {
                 ))}
               </div>
 
-              {/* Saison */}
               <div>
                 <label className="block text-xs font-medium text-[#666666] mb-1.5">Saison</label>
                 <select value={saison} onChange={(e) => setSaison(e.target.value)} className={inputClass}>
@@ -604,7 +658,6 @@ export default function PaiementsPage() {
                 </select>
               </div>
 
-              {/* Élève (individuel) */}
               {createMode === "individuel" && (
                 <div>
                   <label className="block text-xs font-medium text-[#666666] mb-1.5">Élève</label>
@@ -642,7 +695,6 @@ export default function PaiementsPage() {
                 </div>
               )}
 
-              {/* Tarifs */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#666666] mb-1.5">Tarif de base (€)</label>
@@ -671,7 +723,6 @@ export default function PaiementsPage() {
                 </div>
               </div>
 
-              {/* Réductions (bulk seulement) */}
               {createMode === "bulk" && (
                 <div className="bg-green-50 rounded-[12px] p-4 space-y-3">
                   <p className="text-xs font-semibold text-green-700 flex items-center gap-1.5">
@@ -695,7 +746,6 @@ export default function PaiementsPage() {
                 </div>
               )}
 
-              {/* Réduction manuelle (individuel) */}
               {createMode === "individuel" && (
                 <div>
                   <label className="block text-xs font-medium text-[#666666] mb-1.5">Réduction manuelle (€)</label>
@@ -703,7 +753,6 @@ export default function PaiementsPage() {
                 </div>
               )}
 
-              {/* Notes */}
               <div>
                 <label className="block text-xs font-medium text-[#666666] mb-1.5">Notes (facultatif)</label>
                 <textarea value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} rows={2}
@@ -711,7 +760,6 @@ export default function PaiementsPage() {
                   className={inputClass + " resize-none placeholder:text-[#aaaaaa]"} />
               </div>
 
-              {/* Preview */}
               <div className="bg-[#f5f5f5] rounded-[10px] p-3 text-sm text-[#666666]">
                 <p className="font-medium text-[#1a1a1a] mb-1">Aperçu</p>
                 <p>
@@ -721,9 +769,7 @@ export default function PaiementsPage() {
                   {createMode === "individuel" && parseInt(form.reductionManuelle) > 0 && <> · Remise : <b className="text-green-600">−{form.reductionManuelle} €</b></>}
                 </p>
                 <p className="mt-0.5">
-                  {form.nbEcheances === "3"
-                    ? `Paiement en 3× (Sept · Jan · Avr)`
-                    : `Paiement intégral (1×)`}
+                  {form.nbEcheances === "3" ? "Paiement en 3× (Sept · Jan · Avr)" : "Paiement intégral (1×)"}
                 </p>
                 {createMode === "individuel" && selectedEleveId && (
                   <p className="mt-0.5 text-[var(--color-primary)] font-medium">
@@ -732,7 +778,6 @@ export default function PaiementsPage() {
                 )}
               </div>
 
-              {/* Result */}
               {createResult && (
                 <div className="bg-green-50 border border-green-200 rounded-[10px] p-3 text-sm">
                   <p className="font-semibold text-green-700">{createResult.created} cotisation{createResult.created > 1 ? "s" : ""} créée{createResult.created > 1 ? "s" : ""}</p>
@@ -740,7 +785,6 @@ export default function PaiementsPage() {
                 </div>
               )}
 
-              {/* CTA */}
               <button
                 onClick={createMode === "bulk" ? creerBulk : creerIndividuel}
                 disabled={creating || (createMode === "individuel" && !selectedEleveId)}
@@ -751,6 +795,56 @@ export default function PaiementsPage() {
                   : createMode === "bulk"
                   ? `Créer pour tous les élèves actifs — ${saison}`
                   : "Créer la cotisation"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Panneau Personnaliser ── */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex justify-end" onClick={() => setShowSettings(false)}>
+          <div
+            className="h-full w-72 bg-white shadow-2xl p-6 overflow-y-auto flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-bold text-[#1a1a1a]">Personnaliser</h2>
+              <button onClick={() => setShowSettings(false)} className="text-[#999999] hover:text-[#1a1a1a] transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#999999] mb-3">
+              Sections affichées
+            </p>
+
+            <div className="space-y-1 flex-1">
+              {SECTIONS_CONFIG.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => toggleSection(s.id)}
+                  className="flex items-center justify-between w-full px-3 py-3 rounded-[8px] hover:bg-[#f5f5f5] transition-colors"
+                >
+                  <span className="text-sm text-[#1a1a1a]">{s.label}</span>
+                  {show(s.id)
+                    ? <Eye size={16} className="text-[var(--color-primary)]" />
+                    : <EyeOff size={16} className="text-[#cccccc]" />
+                  }
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-[#f0f0f0]">
+              <button
+                onClick={() => {
+                  const reset = Object.fromEntries(SECTIONS_CONFIG.map((s) => [s.id, true]));
+                  setVisible(reset);
+                  localStorage.setItem(LS_KEY, JSON.stringify(reset));
+                }}
+                className="text-xs text-[#999999] hover:text-[#1a1a1a] transition-colors"
+              >
+                Tout réafficher
               </button>
             </div>
           </div>
