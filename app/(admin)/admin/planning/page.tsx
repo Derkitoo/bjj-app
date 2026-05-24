@@ -30,7 +30,6 @@ const TYPE_COLORS: Record<string, { bg: string; border: string; text: string; do
   OPEN_MAT:    { bg: "#f1f5f9", border: "#cbd5e1", text: "#475569", dot: "#94a3b8" },
   SELF_DEFENSE: { bg: "#fef3c7", border: "#fcd34d", text: "#92400e", dot: "#f59e0b" }
 };
-};
 
 const HOUR_START = 7;
 const HOUR_END = 22;
