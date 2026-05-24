@@ -31,12 +31,13 @@ export async function GET() {
     const critere = await prisma.criterePromotion.findUnique({ where: { ceintureCible: nextBelt } });
     if (critere) {
       const lastPromo = eleve.promotions[0];
-      const moisDepuis = lastPromo
-        ? (today.getTime() - new Date(lastPromo.date).getTime()) / (1000 * 60 * 60 * 24 * 30)
-        : 999;
+      const refDate = lastPromo ? new Date(lastPromo.date) : new Date(eleve.dateInscription);
+      const moisDepuis = (today.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
       const progCours = critere.minCours > 0 ? Math.min(eleve.presences.length / critere.minCours, 1) : 1;
       const progMois = critere.minMois > 0 ? Math.min(moisDepuis / critere.minMois, 1) : 1;
       progression = Math.round(((progCours + progMois) / 2) * 100);
+    } else {
+      progression = 0;
     }
   }
 

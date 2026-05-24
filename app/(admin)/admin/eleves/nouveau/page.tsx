@@ -11,7 +11,7 @@ export default function NouvelElevePage() {
   const [copied, setCopied] = useState(false);
   const [form, setForm] = useState({
     nom: "", prenom: "", email: "", telephone: "",
-    dateNaissance: "", ceinture: "BLANCHE", notes: "",
+    dateNaissance: "", ceinture: "BLANCHE", barrettes: 0, notes: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,7 +84,7 @@ export default function NouvelElevePage() {
               Retour à la liste
             </Link>
             <button
-              onClick={() => { setResultat(null); setForm({ nom: "", prenom: "", email: "", telephone: "", dateNaissance: "", ceinture: "BLANCHE", notes: "" }); }}
+              onClick={() => { setResultat(null); setForm({ nom: "", prenom: "", email: "", telephone: "", dateNaissance: "", ceinture: "BLANCHE", barrettes: 0, notes: "" }); }}
               className="border border-[#e5e5e5] text-[#666666] rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[#f9f9f9] transition-colors"
             >
               Ajouter un autre élève
@@ -137,6 +137,23 @@ export default function NouvelElevePage() {
               <option value="MARRON">Marron</option>
               <option value="NOIRE">Noire</option>
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Barrettes (0 à 4)</label>
+            <div className="flex items-center gap-3">
+              <button type="button"
+                onClick={() => setForm((f) => ({ ...f, barrettes: Math.max(0, f.barrettes - 1) }))}
+                className="w-8 h-8 rounded-full border border-[#e5e5e5] text-lg font-bold text-[#666666] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors flex items-center justify-center">−</button>
+              <div className="flex items-center gap-1.5">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <span key={i} className={`w-3 h-5 rounded-sm ${i < form.barrettes ? "bg-[var(--color-primary)]" : "bg-[#e5e5e5]"}`} />
+                ))}
+              </div>
+              <button type="button"
+                onClick={() => setForm((f) => ({ ...f, barrettes: Math.min(4, f.barrettes + 1) }))}
+                className="w-8 h-8 rounded-full border border-[#e5e5e5] text-lg font-bold text-[#666666] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors flex items-center justify-center">+</button>
+              <span className="text-sm text-[#666666]">{form.barrettes}/4</span>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Notes</label>

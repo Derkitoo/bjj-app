@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { QrCode, CheckCircle, Calendar, TrendingUp, Zap } from "lucide-react";
 import CeintureBadge from "@/components/CeintureBadge";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useCountUp } from "@/hooks/useCountUp";
 
 const BELT_BG: Record<string, { from: string; to: string; text: string }> = {
@@ -43,6 +43,7 @@ function ProgressRing({ pct, size = 100 }: { pct: number; size?: number }) {
 
 function AccueilContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [profil, setProfil] = useState<ProfilData | null>(null);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<"success" | "error" | null>(null);
@@ -55,12 +56,7 @@ function AccueilContent() {
     fetch("/api/eleve/profil").then((r) => r.json()).then(setProfil).catch(() => {});
   }, []);
 
-  useEffect(() => {
-    const token = searchParams.get("token");
-    if (token) handleScan(token);
-  }, [searchParams]);
-
-  const handleScan = async (token: string) => {
+  const handleScan = useCallback(async (token: string) => {
     setScanning(true);
     const res = await fetch("/api/presences/scan", {
       method: "POST",
@@ -68,10 +64,21 @@ function AccueilContent() {
       body: JSON.stringify({ token }),
     });
     const data = await res.json();
-    if (res.ok) { setScanResult("success"); setScanMessage("Présence enregistrée !"); }
-    else { setScanResult("error"); setScanMessage(data.error || "Erreur lors du scan"); }
+    if (res.ok) {
+      setScanResult("success");
+      setScanMessage("Présence enregistrée !");
+      router.replace("/eleve/accueil");
+    } else {
+      setScanResult("error");
+      setScanMessage(data.error || "Erreur lors du scan");
+    }
     setScanning(false);
-  };
+  }, [router]);
+
+  useEffect(() => {
+    const token = searchParams.get("token");
+    if (token) handleScan(token);
+  }, [searchParams, handleScan]);
 
   const belt = profil?.ceinture ?? "BLANCHE";
   const beltStyle = BELT_BG[belt] ?? BELT_BG.BLANCHE;

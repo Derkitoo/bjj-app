@@ -1,11 +1,14 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -32,7 +35,9 @@ export default function LoginPage() {
     const session = await res.json();
     const role = session?.user?.role;
 
-    if (role === "ADMIN") {
+    if (callbackUrl) {
+      router.push(callbackUrl);
+    } else if (role === "ADMIN") {
       router.push("/admin/dashboard");
     } else {
       router.push("/eleve/accueil");
@@ -40,7 +45,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f9f9f9] flex items-center justify-center">
+    <div className="min-h-screen bg-[#f9f9f9] flex items-center justify-center px-4">
       <div className="bg-white rounded-[12px] shadow p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">🥋</div>
@@ -59,6 +64,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="votre@email.fr"
               required
+              autoComplete="email"
               className="w-full border border-[#e5e5e5] rounded-[8px] px-4 py-2.5 text-[#1a1a1a] text-sm focus:outline-none focus:border-[var(--color-primary)]"
             />
           </div>
@@ -73,6 +79,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
+              autoComplete="current-password"
               className="w-full border border-[#e5e5e5] rounded-[8px] px-4 py-2.5 text-[#1a1a1a] text-sm focus:outline-none focus:border-[var(--color-primary)]"
             />
           </div>
@@ -91,5 +98,13 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
