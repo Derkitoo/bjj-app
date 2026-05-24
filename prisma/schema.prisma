@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   @default("ELEVE")
+  eleveId   String?  @unique
+  eleve     Eleve?   @relation(fields: [eleveId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Eleve {
+  id              String      @id @default(cuid())
+  nom             String
+  prenom          String
+  dateNaissance   DateTime?
+  email           String?
+  telephone       String?
+  photo           String?
+  dateInscription DateTime    @default(now())
+  actif           Boolean     @default(true)
+  notes           String?
+  ceinture        String      @default("BLANCHE")
+  user            User?
+  presences       Presence[]
+  promotions      Promotion[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Promotion {
+  id        String   @id @default(cuid())
+  eleveId   String
+  eleve     Eleve    @relation(fields: [eleveId], references: [id])
+  ceinture  String
+  date      DateTime @default(now())
+}
+
+model Cours {
+  id           String     @id @default(cuid())
+  titre        String?
+  type         String
+  jour         Int
+  heureDebut   String
+  duree        Int
+  recurrent    Boolean    @default(false)
+  dateSpeciale DateTime?
+  annule       Boolean    @default(false)
+  presences    Presence[]
+  createdAt    DateTime   @default(now())
+}
+
+model Presence {
+  id        String   @id @default(cuid())
+  eleveId   String
+  eleve     Eleve    @relation(fields: [eleveId], references: [id])
+  coursId   String
+  cours     Cours    @relation(fields: [coursId], references: [id])
+  date      DateTime @default(now())
+
+  @@unique([eleveId, coursId])
+}
+
+model CriterePromotion {
+  id            String  @id @default(cuid())
+  ceintureCible String  @unique
+  minCours      Int     @default(0)
+  minMois       Int     @default(0)
+  description   String?
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  titre     String
+  contenu   String
+  videoUrl  String?
+  categorie String
+  publie    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

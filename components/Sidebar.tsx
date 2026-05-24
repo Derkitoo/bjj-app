@@ -1,0 +1,82 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import {
+  LayoutDashboard,
+  Users,
+  CheckSquare,
+  Calendar,
+  Award,
+  Newspaper,
+  LogOut,
+  Home,
+  User,
+} from "lucide-react";
+
+interface SidebarProps {
+  role: "ADMIN" | "ELEVE";
+}
+
+const adminLinks = [
+  { href: "/admin/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
+  { href: "/admin/eleves", label: "Élèves", icon: Users },
+  { href: "/admin/presence", label: "Présence", icon: CheckSquare },
+  { href: "/admin/planning", label: "Planning", icon: Calendar },
+  { href: "/admin/ceintures", label: "Ceintures", icon: Award },
+  { href: "/admin/actualites", label: "Actualités", icon: Newspaper },
+];
+
+const eleveLinks = [
+  { href: "/eleve/accueil", label: "Accueil", icon: Home },
+  { href: "/eleve/planning", label: "Planning", icon: Calendar },
+  { href: "/eleve/actualites", label: "Actualités", icon: Newspaper },
+  { href: "/eleve/profil", label: "Mon profil", icon: User },
+];
+
+export default function Sidebar({ role }: SidebarProps) {
+  const pathname = usePathname();
+  const links = role === "ADMIN" ? adminLinks : eleveLinks;
+
+  return (
+    <aside className="hidden md:flex flex-col w-60 min-h-screen bg-[#1a1a1a] fixed left-0 top-0">
+      <div className="px-6 py-6 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🥋</span>
+          <span className="text-white font-bold text-lg">BJJ Manager</span>
+        </div>
+      </div>
+
+      <nav className="flex-1 px-3 py-4 space-y-1">
+        {links.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || pathname.startsWith(href + "/");
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-sm transition-colors ${
+                active
+                  ? "bg-[#cc0000]/15 text-[#cc0000] font-medium"
+                  : "text-white/70 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <Icon size={18} />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="px-3 py-4 border-t border-white/10">
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors w-full"
+        >
+          <LogOut size={18} />
+          Déconnexion
+        </button>
+      </div>
+    </aside>
+  );
+}
