@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Plus, X, Newspaper } from "lucide-react";
@@ -59,7 +59,7 @@ export default function ActualitesPage() {
         <h1 className="text-2xl font-bold text-[#1a1a1a]">Actualités</h1>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 bg-[#cc0000] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[#aa0000] transition-colors"
+          className="flex items-center gap-2 bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
         >
           <Plus size={16} />
           Nouveau post
@@ -118,23 +118,23 @@ export default function ActualitesPage() {
             <form onSubmit={creer} className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Titre *</label>
-                <input required value={form.titre} onChange={set("titre")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+                <input required value={form.titre} onChange={set("titre")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Catégorie</label>
-                <select value={form.categorie} onChange={set("categorie")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]">
+                <select value={form.categorie} onChange={set("categorie")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]">
                   {Object.entries(CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Contenu *</label>
-                <textarea required value={form.contenu} onChange={set("contenu")} rows={4} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+                <textarea required value={form.contenu} onChange={set("contenu")} rows={4} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Lien YouTube (optionnel)</label>
-                <input value={form.videoUrl} onChange={set("videoUrl")} placeholder="https://youtube.com/watch?v=..." className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+                <input value={form.videoUrl} onChange={set("videoUrl")} placeholder="https://youtube.com/watch?v=..." className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
               </div>
-              <button type="submit" className="w-full bg-[#cc0000] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[#aa0000] transition-colors">
+              <button type="submit" className="w-full bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors">
                 Publier
               </button>
             </form>

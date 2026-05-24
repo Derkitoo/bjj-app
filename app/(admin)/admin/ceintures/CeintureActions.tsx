@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -50,17 +50,17 @@ export default function CeintureActions({ eleveId, nom, ceinture, barrettes: ini
           <button
             onClick={() => changerBarrette(-1)}
             disabled={barrettes === 0}
-            className="w-6 h-6 rounded-full border border-[#e5e5e5] text-sm font-bold text-[#666666] hover:border-[#cc0000] hover:text-[#cc0000] disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+            className="w-6 h-6 rounded-full border border-[#e5e5e5] text-sm font-bold text-[#666666] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
           >−</button>
           <div className="flex items-center gap-0.5">
             {Array.from({ length: 4 }).map((_, i) => (
-              <span key={i} className={`w-2 h-3.5 rounded-sm transition-colors ${i < barrettes ? "bg-[#cc0000]" : "bg-[#e5e5e5]"}`} />
+              <span key={i} className={`w-2 h-3.5 rounded-sm transition-colors ${i < barrettes ? "bg-[var(--color-primary)]" : "bg-[#e5e5e5]"}`} />
             ))}
           </div>
           <button
             onClick={() => changerBarrette(1)}
             disabled={barrettes === 4}
-            className="w-6 h-6 rounded-full border border-[#e5e5e5] text-sm font-bold text-[#666666] hover:border-[#cc0000] hover:text-[#cc0000] disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+            className="w-6 h-6 rounded-full border border-[#e5e5e5] text-sm font-bold text-[#666666] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
           >+</button>
         </div>
       )}
@@ -71,8 +71,8 @@ export default function CeintureActions({ eleveId, nom, ceinture, barrettes: ini
           onClick={() => setShowConfirm(true)}
           className={`rounded-[8px] px-3 py-1 text-xs font-medium transition-colors border ${
             eligible
-              ? "border-[#cc0000] text-[#cc0000] hover:bg-[#cc0000] hover:text-white"
-              : "border-[#e5e5e5] text-[#999999] hover:border-[#cc0000] hover:text-[#cc0000]"
+              ? "border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+              : "border-[#e5e5e5] text-[#999999] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
           }`}
         >
           {eligible ? "⭐ Promouvoir" : "Promouvoir"}
@@ -89,7 +89,7 @@ export default function CeintureActions({ eleveId, nom, ceinture, barrettes: ini
             <p className="text-xs text-[#999999] mb-5">Les barrettes seront remises à zéro.</p>
             <div className="flex gap-3 justify-center">
               <button onClick={promouvoir} disabled={loading}
-                className="bg-[#cc0000] text-white rounded-[8px] px-5 py-2 text-sm font-medium hover:bg-[#aa0000] disabled:opacity-50">
+                className="bg-[var(--color-primary)] text-white rounded-[8px] px-5 py-2 text-sm font-medium hover:bg-[var(--color-primary-dark)] disabled:opacity-50">
                 {loading ? "..." : "Confirmer"}
               </button>
               <button onClick={() => setShowConfirm(false)}

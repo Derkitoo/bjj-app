@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { signIn, useSession } from "next-auth/react";
@@ -64,22 +64,22 @@ export default function ChangerMotDePassePage() {
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Mot de passe temporaire</label>
             <input type="password" required value={form.ancienMdp} onChange={set("ancienMdp")}
-              className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+              className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Nouveau mot de passe</label>
             <input type="password" required value={form.nouveauMdp} onChange={set("nouveauMdp")}
-              className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+              className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
             <p className="text-xs text-[#666666] mt-1">8 caractères minimum</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Confirmer le mot de passe</label>
             <input type="password" required value={form.confirmer} onChange={set("confirmer")}
-              className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+              className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
           </div>
           {error && <p className="text-[#ef4444] text-sm">{error}</p>}
           <button type="submit" disabled={loading}
-            className="w-full bg-[#cc0000] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[#aa0000] disabled:opacity-50 transition-colors">
+            className="w-full bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] disabled:opacity-50 transition-colors">
             {loading ? "Enregistrement..." : "Changer mon mot de passe"}
           </button>
         </form>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
@@ -72,24 +72,24 @@ export default function PaiementsPage() {
         <div>
           <label className="block text-xs font-medium text-[#666666] mb-1">Mois</label>
           <select value={mois} onChange={(e) => setMois(parseInt(e.target.value))}
-            className="border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]">
+            className="border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]">
             {MOIS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
           </select>
         </div>
         <div>
           <label className="block text-xs font-medium text-[#666666] mb-1">Année</label>
           <select value={annee} onChange={(e) => setAnnee(parseInt(e.target.value))}
-            className="border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]">
+            className="border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]">
             {[2024, 2025, 2026, 2027].map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
         </div>
         <div>
           <label className="block text-xs font-medium text-[#666666] mb-1">Montant (€)</label>
           <input type="number" value={montant} onChange={(e) => setMontant(e.target.value)} min="0" step="5"
-            className="border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000] w-24" />
+            className="border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)] w-24" />
         </div>
         <button onClick={generer} disabled={generating}
-          className="flex items-center gap-2 bg-[#cc0000] text-white rounded-[8px] px-4 py-2 text-sm font-medium hover:bg-[#aa0000] disabled:opacity-50 transition-colors">
+          className="flex items-center gap-2 bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2 text-sm font-medium hover:bg-[var(--color-primary-dark)] disabled:opacity-50 transition-colors">
           <Plus size={15} />
           {generating ? "Génération..." : "Générer le mois"}
         </button>

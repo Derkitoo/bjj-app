@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { UserCog, RefreshCw, ToggleLeft, ToggleRight, Copy, Check } from "lucide-react";
@@ -109,10 +109,10 @@ export default function ComptesPage() {
                 <td className="px-4 py-3">
                   {c.role !== "ADMIN" && (
                     <div className="flex items-center gap-2">
-                      <button onClick={() => resetMdp(c.id)} title="Réinitialiser le mot de passe" className="text-[#666666] hover:text-[#cc0000] transition-colors">
+                      <button onClick={() => resetMdp(c.id)} title="Réinitialiser le mot de passe" className="text-[#666666] hover:text-[var(--color-primary)] transition-colors">
                         <RefreshCw size={15} />
                       </button>
-                      <button onClick={() => toggleActif(c.id)} title={c.actif ? "Désactiver" : "Activer"} className="text-[#666666] hover:text-[#cc0000] transition-colors">
+                      <button onClick={() => toggleActif(c.id)} title={c.actif ? "Désactiver" : "Activer"} className="text-[#666666] hover:text-[var(--color-primary)] transition-colors">
                         {c.actif ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                       </button>
                     </div>

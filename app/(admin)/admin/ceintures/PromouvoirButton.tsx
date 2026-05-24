@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -32,7 +32,7 @@ export default function PromouvoirButton({ eleveId, nouvelleCeinture, nom }: Pro
     <>
       <button
         onClick={() => setShowConfirm(true)}
-        className="border border-[#cc0000] text-[#cc0000] rounded-[8px] px-3 py-1 text-xs font-medium hover:bg-[#cc0000] hover:text-white transition-colors"
+        className="border border-[var(--color-primary)] text-[var(--color-primary)] rounded-[8px] px-3 py-1 text-xs font-medium hover:bg-[var(--color-primary)] hover:text-white transition-colors"
       >
         Promouvoir
       </button>
@@ -48,7 +48,7 @@ export default function PromouvoirButton({ eleveId, nouvelleCeinture, nom }: Pro
               <button
                 onClick={promouvoir}
                 disabled={loading}
-                className="bg-[#cc0000] text-white rounded-[8px] px-5 py-2 text-sm font-medium hover:bg-[#aa0000] disabled:opacity-50"
+                className="bg-[var(--color-primary)] text-white rounded-[8px] px-5 py-2 text-sm font-medium hover:bg-[var(--color-primary-dark)] disabled:opacity-50"
               >
                 {loading ? "..." : "Confirmer"}
               </button>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { QrCode, Users, CheckCircle } from "lucide-react";
@@ -83,7 +83,7 @@ export default function PresencePage() {
         <select
           value={selectedCours}
           onChange={(e) => setSelectedCours(e.target.value)}
-          className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]"
+          className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]"
         >
           <option value="">-- Choisir un cours --</option>
           {cours.map((c) => (
@@ -99,14 +99,14 @@ export default function PresencePage() {
           <div className="flex flex-wrap gap-3 mb-5">
             <button
               onClick={genererQR}
-              className="flex items-center gap-2 bg-[#cc0000] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[#aa0000] transition-colors"
+              className="flex items-center gap-2 bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
             >
               <QrCode size={16} />
               Générer QR Code
             </button>
             <button
               onClick={() => setModeTablette(!modeTablette)}
-              className="flex items-center gap-2 border border-[#cc0000] text-[#cc0000] rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[#cc0000] hover:text-white transition-colors"
+              className="flex items-center gap-2 border border-[var(--color-primary)] text-[var(--color-primary)] rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary)] hover:text-white transition-colors"
             >
               <Users size={16} />
               {modeTablette ? "Mode liste" : "Mode tablette"}
@@ -129,7 +129,7 @@ export default function PresencePage() {
                       present ? "border-green-500 bg-green-50" : "border-transparent hover:border-[#e5e5e5]"
                     }`}
                   >
-                    <div className={`w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center text-white text-lg font-bold ${present ? "bg-green-500" : "bg-[#cc0000]"}`}>
+                    <div className={`w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center text-white text-lg font-bold ${present ? "bg-green-500" : "bg-[var(--color-primary)]"}`}>
                       {present ? "✓" : `${eleve.prenom[0]}${eleve.nom[0]}`}
                     </div>
                     <p className="text-xs font-medium text-[#1a1a1a]">{eleve.prenom}</p>

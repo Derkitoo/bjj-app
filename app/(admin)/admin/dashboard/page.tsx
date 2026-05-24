@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -90,7 +90,7 @@ export default function DashboardPage() {
             <div className="bg-white rounded-[12px] shadow-sm p-5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[#666666] text-sm">Présents aujourd&apos;hui</span>
-                <CheckSquare size={18} className="text-[#cc0000]" />
+                <CheckSquare size={18} className="text-[var(--color-primary)]" />
               </div>
               <p className="text-3xl font-bold text-[#1a1a1a]">{stats.kpis.presencesAujourdhui}</p>
               <p className="text-xs text-[#666666] mt-1">sur {totalEleves} actifs</p>
@@ -100,17 +100,17 @@ export default function DashboardPage() {
             <div className="bg-white rounded-[12px] shadow-sm p-5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[#666666] text-sm">Élèves actifs</span>
-                <Users size={18} className="text-[#cc0000]" />
+                <Users size={18} className="text-[var(--color-primary)]" />
               </div>
               <p className="text-3xl font-bold text-[#1a1a1a]">{totalEleves}</p>
-              <Link href="/admin/eleves" className="text-xs text-[#cc0000] hover:underline mt-1 block">Voir la liste</Link>
+              <Link href="/admin/eleves" className="text-xs text-[var(--color-primary)] hover:underline mt-1 block">Voir la liste</Link>
             </div>
           )}
           {show("kpi_taux") && (
             <div className="bg-white rounded-[12px] shadow-sm p-5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[#666666] text-sm">Taux présence (mois)</span>
-                <TrendingUp size={18} className="text-[#cc0000]" />
+                <TrendingUp size={18} className="text-[var(--color-primary)]" />
               </div>
               <p className="text-3xl font-bold text-[#1a1a1a]">{stats.kpis.tauxPresence}%</p>
               <p className="text-xs text-[#666666] mt-1">{stats.kpis.nbFideles} fidèles (≥3/mois)</p>
@@ -120,10 +120,10 @@ export default function DashboardPage() {
             <div className="bg-white rounded-[12px] shadow-sm p-5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[#666666] text-sm">Impayés ce mois</span>
-                <CreditCard size={18} className="text-[#cc0000]" />
+                <CreditCard size={18} className="text-[var(--color-primary)]" />
               </div>
               <p className="text-3xl font-bold text-[#1a1a1a]">{stats.kpis.paiementsImpayesCeMois}</p>
-              <Link href="/admin/paiements" className="text-xs text-[#cc0000] hover:underline mt-1 block">Voir paiements</Link>
+              <Link href="/admin/paiements" className="text-xs text-[var(--color-primary)] hover:underline mt-1 block">Voir paiements</Link>
             </div>
           )}
         </div>
@@ -139,7 +139,7 @@ export default function DashboardPage() {
                 {stats.graphPresences.map((m, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1">
                     <span className="text-xs text-[#666666]">{m.count}</span>
-                    <div className="w-full bg-[#cc0000] rounded-t-[4px]"
+                    <div className="w-full bg-[var(--color-primary)] rounded-t-[4px]"
                       style={{ height: `${Math.round((m.count / maxPresences) * 96)}px`, minHeight: m.count > 0 ? "4px" : "0" }} />
                     <span className="text-xs text-[#666666] capitalize">{m.label}</span>
                   </div>
@@ -160,7 +160,7 @@ export default function DashboardPage() {
                         style={{ backgroundColor: CEINTURE_COLORS[belt].bg, border: CEINTURE_COLORS[belt].border ? `1px solid ${CEINTURE_COLORS[belt].border}` : undefined }} />
                       <span className="text-xs text-[#666666] w-16 capitalize">{belt.toLowerCase()}</span>
                       <div className="flex-1 bg-[#e5e5e5] rounded-full h-2">
-                        <div className="bg-[#cc0000] h-2 rounded-full" style={{ width: `${pct}%` }} />
+                        <div className="bg-[var(--color-primary)] h-2 rounded-full" style={{ width: `${pct}%` }} />
                       </div>
                       <span className="text-xs text-[#666666] w-8 text-right">{count}</span>
                     </div>
@@ -181,7 +181,7 @@ export default function DashboardPage() {
               <ol className="space-y-2">
                 {stats.top5.map((e, i) => (
                   <li key={e.id} className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-[#cc0000] w-4">{i + 1}</span>
+                    <span className="text-xs font-bold text-[var(--color-primary)] w-4">{i + 1}</span>
                     <span className="text-sm text-[#1a1a1a] flex-1">{e.prenom} {e.nom}</span>
                     <span className="text-xs font-semibold text-[#1a1a1a]">{e.count} cours</span>
                   </li>
@@ -192,24 +192,24 @@ export default function DashboardPage() {
           {show("eligibles") && stats.eligibles.length > 0 && (
             <div className="bg-white rounded-[12px] shadow-sm p-5">
               <h2 className="font-semibold text-[#1a1a1a] mb-4 flex items-center gap-2">
-                <Award size={16} className="text-[#cc0000]" />
+                <Award size={16} className="text-[var(--color-primary)]" />
                 Éligibles à promotion ({stats.eligibles.length})
               </h2>
               <ul className="space-y-2">
                 {stats.eligibles.slice(0, 5).map((e) => (
                   <li key={e.id} className="flex items-center justify-between">
                     <span className="text-sm text-[#1a1a1a]">{e.prenom} {e.nom}</span>
-                    <span className="text-xs text-[#cc0000] font-medium">→ {e.nextBelt.toLowerCase()}</span>
+                    <span className="text-xs text-[var(--color-primary)] font-medium">→ {e.nextBelt.toLowerCase()}</span>
                   </li>
                 ))}
               </ul>
-              <Link href="/admin/ceintures" className="text-xs text-[#cc0000] hover:underline mt-3 block">Voir tous →</Link>
+              <Link href="/admin/ceintures" className="text-xs text-[var(--color-primary)] hover:underline mt-3 block">Voir tous →</Link>
             </div>
           )}
           {show("last_post") && stats.lastPost && (
             <div className="bg-white rounded-[12px] shadow-sm p-5">
               <h2 className="font-semibold text-[#1a1a1a] mb-4 flex items-center gap-2">
-                <Newspaper size={16} className="text-[#cc0000]" />
+                <Newspaper size={16} className="text-[var(--color-primary)]" />
                 Dernière actualité
               </h2>
               <p className="text-sm font-medium text-[#1a1a1a]">{stats.lastPost.titre}</p>
@@ -217,7 +217,7 @@ export default function DashboardPage() {
                 {format(new Date(stats.lastPost.createdAt), "d MMMM yyyy", { locale: fr })}
               </p>
               <p className="text-sm text-[#666666] mt-2 line-clamp-2">{stats.lastPost.contenu}</p>
-              <Link href="/admin/actualites" className="text-xs text-[#cc0000] hover:underline mt-3 block">Voir toutes →</Link>
+              <Link href="/admin/actualites" className="text-xs text-[var(--color-primary)] hover:underline mt-3 block">Voir toutes →</Link>
             </div>
           )}
         </div>
@@ -241,7 +241,7 @@ export default function DashboardPage() {
                   className="flex items-center justify-between w-full px-3 py-2.5 rounded-[8px] hover:bg-[#f9f9f9] transition-colors">
                   <span className="text-sm text-[#1a1a1a]">{w.label.replace("KPI — ", "")}</span>
                   {show(w.id)
-                    ? <Eye size={16} className="text-[#cc0000]" />
+                    ? <Eye size={16} className="text-[var(--color-primary)]" />
                     : <EyeOff size={16} className="text-[#bbbbbb]" />}
                 </button>
               ))}
@@ -252,7 +252,7 @@ export default function DashboardPage() {
                   className="flex items-center justify-between w-full px-3 py-2.5 rounded-[8px] hover:bg-[#f9f9f9] transition-colors">
                   <span className="text-sm text-[#1a1a1a]">{w.label}</span>
                   {show(w.id)
-                    ? <Eye size={16} className="text-[#cc0000]" />
+                    ? <Eye size={16} className="text-[var(--color-primary)]" />
                     : <EyeOff size={16} className="text-[#bbbbbb]" />}
                 </button>
               ))}
@@ -261,7 +261,7 @@ export default function DashboardPage() {
             <button onClick={() => {
               setVisible(DEFAULT_VISIBLE);
               localStorage.removeItem(LS_KEY);
-            }} className="mt-6 text-xs text-[#666666] hover:text-[#cc0000] transition-colors">
+            }} className="mt-6 text-xs text-[#666666] hover:text-[var(--color-primary)] transition-colors">
               Réinitialiser l&apos;affichage par défaut
             </button>
           </div>

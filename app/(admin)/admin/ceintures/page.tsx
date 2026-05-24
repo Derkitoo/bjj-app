@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+﻿import { prisma } from "@/lib/prisma";
 import CeintureBadge from "@/components/CeintureBadge";
 import CeintureActions from "./CeintureActions";
 import Link from "next/link";
@@ -55,8 +55,8 @@ export default async function CeinturesPage() {
       </div>
 
       {eligibles.length > 0 && (
-        <div className="bg-[#fef2f2] border border-[#cc0000]/20 rounded-[12px] p-5 mb-6">
-          <h2 className="font-semibold text-[#cc0000] flex items-center gap-2 mb-3">
+        <div className="bg-[var(--color-primary-bg)] border border-[var(--color-primary-subtle)] rounded-[12px] p-5 mb-6">
+          <h2 className="font-semibold text-[var(--color-primary)] flex items-center gap-2 mb-3">
             <Award size={18} />
             Éligibles à promotion ({eligibles.length})
           </h2>
@@ -101,7 +101,7 @@ export default async function CeinturesPage() {
                   {eleve.nextBelt ? (
                     <div className="flex items-center gap-2">
                       <div className="flex-1 bg-[#e5e5e5] rounded-full h-2 max-w-[120px]">
-                        <div className="bg-[#cc0000] h-2 rounded-full" style={{ width: `${eleve.progression}%` }} />
+                        <div className="bg-[var(--color-primary)] h-2 rounded-full" style={{ width: `${eleve.progression}%` }} />
                       </div>
                       <span className="text-xs text-[#666666]">{eleve.progression}%</span>
                     </div>

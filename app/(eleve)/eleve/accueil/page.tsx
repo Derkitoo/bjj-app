@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { QrCode, CheckCircle, Calendar } from "lucide-react";
@@ -55,7 +55,7 @@ function AccueilContent() {
 
       {profil && (
         <div className="bg-white rounded-[12px] shadow-sm p-5 mb-4 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-[#cc0000] flex items-center justify-center text-white text-xl font-bold">
+          <div className="w-14 h-14 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white text-xl font-bold">
             {profil.prenom[0]}{profil.nom[0]}
           </div>
           <div>
@@ -67,7 +67,7 @@ function AccueilContent() {
       )}
 
       <div className="bg-white rounded-[12px] shadow-sm p-6 mb-4 text-center">
-        <QrCode size={40} className="mx-auto mb-3 text-[#cc0000]" />
+        <QrCode size={40} className="mx-auto mb-3 text-[var(--color-primary)]" />
         <h2 className="font-semibold text-[#1a1a1a] mb-2">Pointer ma présence</h2>
         <p className="text-sm text-[#666666] mb-4">Scannez le QR Code affiché par votre professeur</p>
 
@@ -86,10 +86,10 @@ function AccueilContent() {
 
       <div className="bg-white rounded-[12px] shadow-sm p-5">
         <div className="flex items-center gap-2 text-[#1a1a1a] font-semibold mb-3">
-          <Calendar size={18} className="text-[#cc0000]" />
+          <Calendar size={18} className="text-[var(--color-primary)]" />
           Planning de la semaine
         </div>
-        <a href="/eleve/planning" className="text-sm text-[#cc0000] hover:underline">Voir le planning complet →</a>
+        <a href="/eleve/planning" className="text-sm text-[var(--color-primary)] hover:underline">Voir le planning complet →</a>
       </div>
     </div>
   );

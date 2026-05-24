@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -15,7 +16,9 @@ import {
   User,
   UserCog,
   CreditCard,
+  Palette,
 } from "lucide-react";
+import { THEMES, applyTheme, type ThemeKey } from "@/lib/themes";
 
 interface SidebarProps {
   role: "ADMIN" | "ELEVE";
@@ -42,9 +45,25 @@ const eleveLinks = [
 export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
   const links = role === "ADMIN" ? adminLinks : eleveLinks;
+  const [theme, setTheme] = useState<ThemeKey>("rouge");
+  const [showThemes, setShowThemes] = useState(false);
+
+  useEffect(() => {
+    const saved = (localStorage.getItem("theme") as ThemeKey) || "rouge";
+    setTheme(saved);
+  }, []);
+
+  const selectTheme = (key: ThemeKey) => {
+    localStorage.setItem("theme", key);
+    applyTheme(key);
+    setTheme(key);
+  };
 
   return (
-    <aside className="hidden md:flex flex-col w-60 min-h-screen bg-[#1a1a1a] fixed left-0 top-0">
+    <aside
+      className="hidden md:flex flex-col w-60 min-h-screen fixed left-0 top-0 transition-colors duration-200"
+      style={{ backgroundColor: "var(--color-sidebar)" }}
+    >
       <div className="px-6 py-6 border-b border-white/10">
         <div className="flex items-center gap-3">
           <span className="text-2xl">🥋</span>
@@ -61,7 +80,7 @@ export default function Sidebar({ role }: SidebarProps) {
               href={href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-sm transition-colors ${
                 active
-                  ? "bg-[#cc0000]/15 text-[#cc0000] font-medium"
+                  ? "bg-[var(--color-primary-subtle)] text-[var(--color-primary)] font-medium"
                   : "text-white/70 hover:text-white hover:bg-white/5"
               }`}
             >
@@ -72,7 +91,39 @@ export default function Sidebar({ role }: SidebarProps) {
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t border-white/10">
+      <div className="px-3 py-4 border-t border-white/10 space-y-1">
+        {role === "ADMIN" && (
+          <div>
+            <button
+              onClick={() => setShowThemes((v) => !v)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors w-full"
+            >
+              <Palette size={18} />
+              Thème
+            </button>
+
+            {showThemes && (
+              <div className="px-3 pt-1 pb-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {(Object.entries(THEMES) as [ThemeKey, typeof THEMES[ThemeKey]][]).map(([key, t]) => (
+                    <button
+                      key={key}
+                      title={t.label}
+                      onClick={() => selectTheme(key)}
+                      className="w-6 h-6 rounded-full transition-all"
+                      style={{
+                        backgroundColor: t.primary,
+                        outline: theme === key ? `2px solid white` : "2px solid transparent",
+                        outlineOffset: "2px",
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors w-full"

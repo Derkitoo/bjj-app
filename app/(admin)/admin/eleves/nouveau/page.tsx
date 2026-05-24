@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -80,7 +80,7 @@ export default function NouvelElevePage() {
           </div>
 
           <div className="flex gap-3">
-            <Link href="/admin/eleves" className="bg-[#cc0000] text-white rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[#aa0000] transition-colors">
+            <Link href="/admin/eleves" className="bg-[var(--color-primary)] text-white rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors">
               Retour à la liste
             </Link>
             <button
@@ -109,28 +109,28 @@ export default function NouvelElevePage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Prénom *</label>
-              <input required value={form.prenom} onChange={set("prenom")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+              <input required value={form.prenom} onChange={set("prenom")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Nom *</label>
-              <input required value={form.nom} onChange={set("nom")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+              <input required value={form.nom} onChange={set("nom")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Email</label>
-            <input type="email" value={form.email} onChange={set("email")} placeholder="Un compte sera créé automatiquement" className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000] placeholder:text-[#aaaaaa]" />
+            <input type="email" value={form.email} onChange={set("email")} placeholder="Un compte sera créé automatiquement" className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)] placeholder:text-[#aaaaaa]" />
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Téléphone</label>
-            <input value={form.telephone} onChange={set("telephone")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+            <input value={form.telephone} onChange={set("telephone")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Date de naissance</label>
-            <input type="date" value={form.dateNaissance} onChange={set("dateNaissance")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+            <input type="date" value={form.dateNaissance} onChange={set("dateNaissance")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Ceinture</label>
-            <select value={form.ceinture} onChange={set("ceinture")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]">
+            <select value={form.ceinture} onChange={set("ceinture")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]">
               <option value="BLANCHE">Blanche</option>
               <option value="BLEUE">Bleue</option>
               <option value="VIOLETTE">Violette</option>
@@ -140,11 +140,11 @@ export default function NouvelElevePage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Notes</label>
-            <textarea value={form.notes} onChange={set("notes")} rows={3} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+            <textarea value={form.notes} onChange={set("notes")} rows={3} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
           </div>
           {error && <p className="text-[#ef4444] text-sm">{error}</p>}
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={loading} className="bg-[#cc0000] text-white rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[#aa0000] disabled:opacity-50 transition-colors">
+            <button type="submit" disabled={loading} className="bg-[var(--color-primary)] text-white rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] disabled:opacity-50 transition-colors">
               {loading ? "Enregistrement..." : "Ajouter l'élève"}
             </button>
             <Link href="/admin/eleves" className="border border-[#e5e5e5] text-[#666666] rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[#f9f9f9] transition-colors">

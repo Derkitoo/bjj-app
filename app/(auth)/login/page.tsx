@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
@@ -59,7 +59,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="votre@email.fr"
               required
-              className="w-full border border-[#e5e5e5] rounded-[8px] px-4 py-2.5 text-[#1a1a1a] text-sm focus:outline-none focus:border-[#cc0000]"
+              className="w-full border border-[#e5e5e5] rounded-[8px] px-4 py-2.5 text-[#1a1a1a] text-sm focus:outline-none focus:border-[var(--color-primary)]"
             />
           </div>
 
@@ -73,7 +73,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full border border-[#e5e5e5] rounded-[8px] px-4 py-2.5 text-[#1a1a1a] text-sm focus:outline-none focus:border-[#cc0000]"
+              className="w-full border border-[#e5e5e5] rounded-[8px] px-4 py-2.5 text-[#1a1a1a] text-sm focus:outline-none focus:border-[var(--color-primary)]"
             />
           </div>
 
@@ -84,7 +84,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#cc0000] text-white rounded-[8px] px-4 py-2.5 font-medium text-sm hover:bg-[#aa0000] disabled:opacity-50 transition-colors"
+            className="w-full bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 font-medium text-sm hover:bg-[var(--color-primary-dark)] disabled:opacity-50 transition-colors"
           >
             {loading ? "Connexion..." : "Se connecter"}
           </button>

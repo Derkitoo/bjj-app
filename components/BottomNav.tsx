@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -46,7 +46,7 @@ export default function BottomNav({ role }: BottomNavProps) {
               key={href}
               href={href}
               className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors ${
-                active ? "text-[#cc0000]" : "text-white/60"
+                active ? "text-[var(--color-primary)]" : "text-white/60"
               }`}
             >
               <Icon size={20} />

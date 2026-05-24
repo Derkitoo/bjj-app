@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+﻿import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import CeintureBadge from "@/components/CeintureBadge";
@@ -32,7 +32,7 @@ export default async function ProfilElevePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-white rounded-[12px] shadow-sm p-5">
           <div className="flex items-center gap-4 mb-5">
-            <div className="w-16 h-16 rounded-full bg-[#cc0000] flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-16 h-16 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white text-2xl font-bold">
               {eleve.prenom[0]}{eleve.nom[0]}
             </div>
             <div>
@@ -61,11 +61,11 @@ export default async function ProfilElevePage() {
           <h2 className="font-semibold text-[#1a1a1a] mb-4">Statistiques</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-[#f9f9f9] rounded-[8px] p-3 text-center">
-              <p className="text-2xl font-bold text-[#cc0000]">{eleve.presences.length}</p>
+              <p className="text-2xl font-bold text-[var(--color-primary)]">{eleve.presences.length}</p>
               <p className="text-xs text-[#666666] mt-1">Cours au total</p>
             </div>
             <div className="bg-[#f9f9f9] rounded-[8px] p-3 text-center">
-              <p className="text-2xl font-bold text-[#cc0000]">{presencesMois}</p>
+              <p className="text-2xl font-bold text-[var(--color-primary)]">{presencesMois}</p>
               <p className="text-xs text-[#666666] mt-1">Ce mois-ci</p>
             </div>
           </div>
