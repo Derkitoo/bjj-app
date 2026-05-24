@@ -9,13 +9,16 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  role      String   @default("ELEVE")
-  eleveId   String?  @unique
-  eleve     Eleve?   @relation(fields: [eleveId], references: [id])
-  createdAt DateTime @default(now())
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  password             String
+  role                 String    @default("ELEVE")
+  eleveId              String?   @unique
+  eleve                Eleve?    @relation(fields: [eleveId], references: [id])
+  motDePasseTemporaire Boolean   @default(true)
+  actif                Boolean   @default(true)
+  derniereConnexion    DateTime?
+  createdAt            DateTime  @default(now())
 }
 
 model Eleve {
@@ -26,6 +29,16 @@ model Eleve {
   email           String?
   telephone       String?
   photo           String?
+  adresse         String?
+  ville           String?
+  codePostal      String?
+  poids           Float?
+  taille          Float?
+  contactUrgence  String?
+  telUrgence      String?
+  niveauSport     String?
+  objectifs       String?
+  medical         String?
   dateInscription DateTime    @default(now())
   actif           Boolean     @default(true)
   notes           String?
@@ -33,6 +46,7 @@ model Eleve {
   user            User?
   presences       Presence[]
   promotions      Promotion[]
+  paiements       Paiement[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }
@@ -87,4 +101,18 @@ model Post {
   publie    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Paiement {
+  id        String    @id @default(cuid())
+  eleveId   String
+  eleve     Eleve     @relation(fields: [eleveId], references: [id])
+  montant   Float     @default(50)
+  mois      Int
+  annee     Int
+  statut    String    @default("EN_ATTENTE")
+  date      DateTime?
+  createdAt DateTime  @default(now())
+
+  @@unique([eleveId, mois, annee])
 }

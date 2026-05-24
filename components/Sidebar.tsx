@@ -13,6 +13,7 @@ import {
   LogOut,
   Home,
   User,
+  UserCog,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -26,6 +27,7 @@ const adminLinks = [
   { href: "/admin/planning", label: "Planning", icon: Calendar },
   { href: "/admin/ceintures", label: "Ceintures", icon: Award },
   { href: "/admin/actualites", label: "Actualités", icon: Newspaper },
+  { href: "/admin/comptes", label: "Comptes", icon: UserCog },
 ];
 
 const eleveLinks = [

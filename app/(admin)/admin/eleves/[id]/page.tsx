@@ -13,10 +13,15 @@ export default async function EleveDetailPage({ params }: { params: Promise<{ id
     include: {
       presences: { orderBy: { date: "desc" }, take: 20, include: { cours: true } },
       promotions: { orderBy: { date: "desc" } },
+      user: { select: { email: true, actif: true, motDePasseTemporaire: true, createdAt: true } },
     },
   });
 
   if (!eleve) notFound();
+
+  const niveauLabel: Record<string, string> = {
+    DEBUTANT: "Débutant", INTERMEDIAIRE: "Intermédiaire", AVANCE: "Avancé", COMPETITEUR: "Compétiteur",
+  };
 
   return (
     <div>
@@ -64,6 +69,22 @@ export default async function EleveDetailPage({ params }: { params: Promise<{ id
                 </dd>
               </div>
             )}
+            {(eleve.poids || eleve.taille) && (
+              <div>
+                <dt className="text-xs text-[#666666]">Morphologie</dt>
+                <dd className="text-sm text-[#1a1a1a] mt-1">
+                  {eleve.taille ? `${eleve.taille} cm` : ""}
+                  {eleve.taille && eleve.poids ? " · " : ""}
+                  {eleve.poids ? `${eleve.poids} kg` : ""}
+                </dd>
+              </div>
+            )}
+            {eleve.niveauSport && (
+              <div>
+                <dt className="text-xs text-[#666666]">Niveau</dt>
+                <dd className="text-sm text-[#1a1a1a] mt-1">{niveauLabel[eleve.niveauSport] ?? eleve.niveauSport}</dd>
+              </div>
+            )}
             <div>
               <dt className="text-xs text-[#666666]">Inscrit le</dt>
               <dd className="text-sm text-[#1a1a1a] mt-1">
@@ -79,10 +100,55 @@ export default async function EleveDetailPage({ params }: { params: Promise<{ id
               </dd>
             </div>
           </dl>
+
+          {(eleve.adresse || eleve.ville) && (
+            <div className="mt-4 pt-4 border-t border-[#e5e5e5]">
+              <p className="text-xs text-[#666666] mb-1">Adresse</p>
+              {eleve.adresse && <p className="text-sm text-[#1a1a1a]">{eleve.adresse}</p>}
+              {(eleve.codePostal || eleve.ville) && (
+                <p className="text-sm text-[#1a1a1a]">{[eleve.codePostal, eleve.ville].filter(Boolean).join(" ")}</p>
+              )}
+            </div>
+          )}
+
+          {(eleve.contactUrgence || eleve.telUrgence) && (
+            <div className="mt-4 pt-4 border-t border-[#e5e5e5]">
+              <p className="text-xs text-[#666666] mb-1">Contact d&apos;urgence</p>
+              {eleve.contactUrgence && <p className="text-sm text-[#1a1a1a]">{eleve.contactUrgence}</p>}
+              {eleve.telUrgence && <p className="text-sm text-[#666666]">{eleve.telUrgence}</p>}
+            </div>
+          )}
+
+          {eleve.medical && (
+            <div className="mt-4 pt-4 border-t border-[#e5e5e5]">
+              <p className="text-xs text-[#666666] mb-1">Informations médicales</p>
+              <p className="text-sm text-[#1a1a1a]">{eleve.medical}</p>
+            </div>
+          )}
+
+          {eleve.objectifs && (
+            <div className="mt-4 pt-4 border-t border-[#e5e5e5]">
+              <p className="text-xs text-[#666666] mb-1">Objectifs</p>
+              <p className="text-sm text-[#1a1a1a]">{eleve.objectifs}</p>
+            </div>
+          )}
+
           {eleve.notes && (
             <div className="mt-4 pt-4 border-t border-[#e5e5e5]">
               <p className="text-xs text-[#666666] mb-1">Notes</p>
               <p className="text-sm text-[#1a1a1a]">{eleve.notes}</p>
+            </div>
+          )}
+
+          {eleve.user && (
+            <div className="mt-4 pt-4 border-t border-[#e5e5e5]">
+              <p className="text-xs text-[#666666] mb-2">Compte</p>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${eleve.user.actif ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                {eleve.user.actif ? "Actif" : "Désactivé"}
+              </span>
+              {eleve.user.motDePasseTemporaire && (
+                <p className="text-xs text-orange-600 mt-1">⚠ Mot de passe temporaire</p>
+              )}
             </div>
           )}
         </div>

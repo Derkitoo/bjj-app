@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { genererMotDePasseTemporaire, hasherMotDePasse } from "@/lib/password";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -35,6 +36,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Nom et prénom requis" }, { status: 400 });
   }
 
+  if (email) {
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) return NextResponse.json({ error: "Cet email est déjà utilisé" }, { status: 400 });
+  }
+
   const eleve = await prisma.eleve.create({
     data: {
       nom,
@@ -47,5 +53,14 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json(eleve, { status: 201 });
+  let mdpTemporaire: string | null = null;
+  if (email) {
+    mdpTemporaire = genererMotDePasseTemporaire();
+    const hash = await hasherMotDePasse(mdpTemporaire);
+    await prisma.user.create({
+      data: { email, password: hash, role: "ELEVE", eleveId: eleve.id, motDePasseTemporaire: true },
+    });
+  }
+
+  return NextResponse.json({ eleve, mdpTemporaire }, { status: 201 });
 }

@@ -27,7 +27,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { id } = await params;
   const body = await req.json();
-  const { nom, prenom, email, telephone, dateNaissance, ceinture, notes, actif } = body;
+  const {
+    nom, prenom, email, telephone, dateNaissance, ceinture, notes, actif,
+    poids, taille, adresse, ville, codePostal, contactUrgence, telUrgence,
+    niveauSport, objectifs, medical,
+  } = body;
 
   const eleve = await prisma.eleve.update({
     where: { id },
@@ -40,6 +44,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       ceinture,
       notes: notes || null,
       actif,
+      poids: poids ? parseFloat(poids) : null,
+      taille: taille ? parseFloat(taille) : null,
+      adresse: adresse || null,
+      ville: ville || null,
+      codePostal: codePostal || null,
+      contactUrgence: contactUrgence || null,
+      telUrgence: telUrgence || null,
+      niveauSport: niveauSport || null,
+      objectifs: objectifs || null,
+      medical: medical || null,
     },
   });
 

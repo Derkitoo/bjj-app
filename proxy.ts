@@ -17,6 +17,10 @@ export default auth((req) => {
     if (role !== "ELEVE" && role !== "ADMIN") {
       return NextResponse.redirect(new URL("/login", req.url));
     }
+    const motDePasseTemporaire = (session.user as unknown as { motDePasseTemporaire: boolean }).motDePasseTemporaire;
+    if (motDePasseTemporaire && pathname !== "/eleve/changer-mot-de-passe") {
+      return NextResponse.redirect(new URL("/eleve/changer-mot-de-passe", req.url));
+    }
   }
 
   if (

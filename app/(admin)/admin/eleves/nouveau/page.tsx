@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Copy, Check, UserCheck } from "lucide-react";
 
 export default function NouvelElevePage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resultat, setResultat] = useState<{ eleveId: string; mdpTemporaire: string | null } | null>(null);
+  const [copied, setCopied] = useState(false);
   const [form, setForm] = useState({
     nom: "", prenom: "", email: "", telephone: "",
     dateNaissance: "", ceinture: "BLANCHE", notes: "",
@@ -25,18 +25,75 @@ export default function NouvelElevePage() {
       body: JSON.stringify(form),
     });
 
+    const data = await res.json();
     if (!res.ok) {
-      const data = await res.json();
       setError(data.error || "Une erreur est survenue");
       setLoading(false);
       return;
     }
 
-    router.push("/admin/eleves");
+    setResultat({ eleveId: data.eleve.id, mdpTemporaire: data.mdpTemporaire });
+    setLoading(false);
   };
 
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value }));
+
+  const copier = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (resultat) {
+    return (
+      <div>
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/admin/eleves" className="text-[#666666] hover:text-[#1a1a1a]">
+            <ArrowLeft size={20} />
+          </Link>
+          <h1 className="text-2xl font-bold text-[#1a1a1a]">Élève ajouté</h1>
+        </div>
+
+        <div className="max-w-xl space-y-4">
+          <div className="bg-green-50 border border-green-200 rounded-[12px] p-5 flex items-start gap-4">
+            <UserCheck size={22} className="text-green-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-green-800">
+                {form.prenom} {form.nom} a bien été ajouté
+              </p>
+              {resultat.mdpTemporaire ? (
+                <>
+                  <p className="text-xs text-green-700 mt-1">Un compte a été créé avec le mot de passe temporaire ci-dessous. Communique-le à l&apos;élève.</p>
+                  <div className="flex items-center justify-between bg-white border border-green-300 rounded-[8px] px-4 py-3 mt-3">
+                    <span className="font-mono text-lg font-bold text-green-900">{resultat.mdpTemporaire}</span>
+                    <button onClick={() => copier(resultat.mdpTemporaire!)} className="flex items-center gap-1.5 bg-green-700 text-white rounded-[6px] px-3 py-1.5 text-xs font-medium">
+                      {copied ? <Check size={13} /> : <Copy size={13} />}
+                      {copied ? "Copié !" : "Copier"}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs text-green-700 mt-1">Aucun email fourni — aucun compte créé. Tu pourras en créer un depuis la page Comptes.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Link href="/admin/eleves" className="bg-[#cc0000] text-white rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[#aa0000] transition-colors">
+              Retour à la liste
+            </Link>
+            <button
+              onClick={() => { setResultat(null); setForm({ nom: "", prenom: "", email: "", telephone: "", dateNaissance: "", ceinture: "BLANCHE", notes: "" }); }}
+              className="border border-[#e5e5e5] text-[#666666] rounded-[8px] px-5 py-2.5 text-sm font-medium hover:bg-[#f9f9f9] transition-colors"
+            >
+              Ajouter un autre élève
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -61,7 +118,7 @@ export default function NouvelElevePage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Email</label>
-            <input type="email" value={form.email} onChange={set("email")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000]" />
+            <input type="email" value={form.email} onChange={set("email")} placeholder="Un compte sera créé automatiquement" className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[#cc0000] placeholder:text-[#aaaaaa]" />
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Téléphone</label>
