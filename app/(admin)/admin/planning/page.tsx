@@ -28,7 +28,7 @@ const TYPE_COLORS: Record<string, { bg: string; border: string; text: string; do
   KIDS:        { bg: "#dcfce7", border: "#86efac", text: "#166534", dot: "#22c55e" },
   COMPETITION: { bg: "#fee2e2", border: "#fca5a5", text: "#dc2626", dot: "#ef4444" },
   OPEN_MAT:    { bg: "#f1f5f9", border: "#cbd5e1", text: "#475569", dot: "#94a3b8" },
-  SELF_DEFENSE: { bg: "#fef3c7", border: "#fcd34d", text: "#92400e", dot: "#f59e0b" },
+  SELF_DEFENSE: { bg: "#fef3c7", border: "#fcd34d", text: "#92400e", dot: "#f59e0b" }
 };
 };
 
