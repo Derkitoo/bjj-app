@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   const [eleve, promotion] = await Promise.all([
     prisma.eleve.update({
       where: { id: eleveId },
-      data: { ceinture: nouvelleCeinture },
+      data: { ceinture: nouvelleCeinture, barrettes: 0 },
     }),
     prisma.promotion.create({
       data: { eleveId, ceinture: nouvelleCeinture },
