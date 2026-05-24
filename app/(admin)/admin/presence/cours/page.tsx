@@ -36,7 +36,7 @@ interface Presence {
 }
 
 const JOURS: Record<number, string> = { 0: "Dimanche", 1: "Lundi", 2: "Mardi", 3: "Mercredi", 4: "Jeudi", 5: "Vendredi", 6: "Samedi" };
-const TYPES: Record<string, string> = { GI: "Gi", NO_GI: "No-Gi", KIDS: "Kids", COMPETITION: "Compétition", OPEN_MAT: "Open Mat" };
+const TYPES: Record<string, string> = { GI: "Gi", NO_GI: "No-Gi", KIDS: "Kids", COMPETITION: "Compétition", OPEN_MAT: "Open Mat" , SELF_DEFENSE: "Self-Défense"};
 const TYPE_DOTS: Record<string, string> = { GI: "#3b82f6", NO_GI: "#8b5cf6", KIDS: "#22c55e", COMPETITION: "#ef4444", OPEN_MAT: "#94a3b8" };
 
 const BELT_ORDER: Record<string, number> = { NOIRE: 0, MARRON: 1, VIOLETTE: 2, BLEUE: 3, BLANCHE: 4 };
