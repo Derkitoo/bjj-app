@@ -83,22 +83,23 @@ export default function PlanningPage() {
   };
 
   const totalCours = cours.filter((c) => !c.annule).length;
+  const coursTries = (jour: number) =>
+    cours.filter((c) => c.jour === jour && !c.annule).sort((a, b) => a.heureDebut.localeCompare(b.heureDebut));
 
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-2xl font-bold text-[#1a1a1a]">Planning</h1>
-          <p className="text-sm text-[#666666] mt-0.5">
-            {totalCours} cours par semaine
-          </p>
+          <p className="text-sm text-[#666666] mt-0.5">{totalCours} cours par semaine</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
           className="flex items-center gap-2 bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
         >
           <Plus size={16} />
-          Ajouter un cours
+          <span className="hidden sm:inline">Ajouter un cours</span>
+          <span className="sm:hidden">Ajouter</span>
         </button>
       </div>
 
@@ -116,20 +117,67 @@ export default function PlanningPage() {
         })}
       </div>
 
-      <div className="bg-white rounded-[12px] shadow-sm overflow-hidden">
+      {/* ── Mobile : liste par jour ── */}
+      <div className="md:hidden space-y-3">
+        {JOURS_ORDERED.map((jour) => {
+          const coursDuJour = coursTries(jour);
+          if (coursDuJour.length === 0) return null;
+          return (
+            <div key={jour} className="bg-white rounded-[12px] shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[#f0f0f0]">
+                <h3 className="font-semibold text-sm text-[#1a1a1a]">{JOURS_LABELS[jour]}</h3>
+                <span className="text-xs text-[#aaaaaa]">{coursDuJour.length} cours</span>
+              </div>
+              <div className="divide-y divide-[#f7f7f7]">
+                {coursDuJour.map((c) => {
+                  const s = TYPE_COLORS[c.type] || TYPE_COLORS.OPEN_MAT;
+                  return (
+                    <div key={c.id} className="flex items-center gap-3 px-4 py-3">
+                      <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: s.dot }} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#1a1a1a]">{TYPES[c.type]}</p>
+                        <p className="text-xs text-[#666666] mt-0.5 flex items-center gap-1">
+                          <Clock size={11} />
+                          {c.heureDebut} · {formatDuree(c.duree)}
+                        </p>
+                        {c.titre && <p className="text-xs text-[#999999] mt-0.5">{c.titre}</p>}
+                      </div>
+                      <button
+                        onClick={() => supprimer(c.id)}
+                        className="text-[#cccccc] hover:text-red-500 transition-colors p-1 flex-shrink-0"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+        {totalCours === 0 && (
+          <div className="bg-white rounded-[12px] shadow-sm p-8 text-center">
+            <p className="text-sm text-[#666666]">Aucun cours programmé</p>
+            <p className="text-xs text-[#aaaaaa] mt-1">Appuie sur "Ajouter" pour créer ton premier cours</p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Desktop : grille calendrier ── */}
+      <div className="hidden md:block bg-white rounded-[12px] shadow-sm overflow-hidden">
         <div
           className="grid border-b border-[#e5e5e5]"
           style={{ gridTemplateColumns: "48px repeat(7, 1fr)" }}
         >
           <div className="border-r border-[#e5e5e5]" />
           {JOURS_ORDERED.map((jour) => {
-            const n = cours.filter((c) => c.jour === jour && !c.annule).length;
+            const n = coursTries(jour).length;
             return (
               <div key={jour} className="text-center py-3 border-r border-[#e5e5e5] last:border-r-0">
-                <p className="text-xs font-semibold text-[#1a1a1a] hidden sm:block">{JOURS_LABELS[jour]}</p>
-                <p className="text-xs font-semibold text-[#1a1a1a] sm:hidden">{JOURS_SHORT[jour]}</p>
+                <p className="text-xs font-semibold text-[#1a1a1a] hidden lg:block">{JOURS_LABELS[jour]}</p>
+                <p className="text-xs font-semibold text-[#1a1a1a] lg:hidden">{JOURS_SHORT[jour]}</p>
                 {n > 0 && (
-                  <span className="inline-block mt-0.5 text-[10px] font-medium px-1.5 py-0 rounded-full bg-[var(--color-primary-subtle)] text-[var(--color-primary)]">
+                  <span className="inline-block mt-0.5 text-[10px] font-medium px-1.5 rounded-full bg-[var(--color-primary-subtle)] text-[var(--color-primary)]">
                     {n}
                   </span>
                 )}
@@ -174,77 +222,64 @@ export default function PlanningPage() {
                   />
                 ))}
 
-                {cours
-                  .filter((c) => c.jour === jour && !c.annule)
-                  .map((c) => {
-                    const top = timeToY(c.heureDebut);
-                    const height = Math.max((c.duree / 60) * PX_PER_HOUR, 22);
-                    const s = TYPE_COLORS[c.type] || TYPE_COLORS.OPEN_MAT;
-                    return (
-                      <div
-                        key={c.id}
-                        className="absolute left-1 right-1 rounded-[6px] px-1.5 py-1 border group cursor-default overflow-hidden"
-                        style={{ top: `${top}px`, height: `${height}px`, backgroundColor: s.bg, borderColor: s.border }}
-                      >
-                        <div className="flex items-start justify-between gap-0.5 h-full">
-                          <div className="min-w-0 overflow-hidden">
-                            <p
-                              className="text-[11px] font-bold leading-tight truncate"
-                              style={{ color: s.text }}
-                            >
-                              {TYPES[c.type]}
+                {coursTries(jour).map((c) => {
+                  const top = timeToY(c.heureDebut);
+                  const height = Math.max((c.duree / 60) * PX_PER_HOUR, 22);
+                  const s = TYPE_COLORS[c.type] || TYPE_COLORS.OPEN_MAT;
+                  return (
+                    <div
+                      key={c.id}
+                      className="absolute left-1 right-1 rounded-[6px] px-1.5 py-1 border group cursor-default overflow-hidden"
+                      style={{ top: `${top}px`, height: `${height}px`, backgroundColor: s.bg, borderColor: s.border }}
+                    >
+                      <div className="flex items-start justify-between gap-0.5 h-full">
+                        <div className="min-w-0 overflow-hidden">
+                          <p className="text-[11px] font-bold leading-tight truncate" style={{ color: s.text }}>
+                            {TYPES[c.type]}
+                          </p>
+                          {height >= 38 && (
+                            <p className="text-[10px] mt-0.5 flex items-center gap-0.5 leading-tight" style={{ color: s.text, opacity: 0.7 }}>
+                              <Clock size={9} className="flex-shrink-0" />
+                              {c.heureDebut} · {formatDuree(c.duree)}
                             </p>
-                            {height >= 38 && (
-                              <p
-                                className="text-[10px] mt-0.5 flex items-center gap-0.5 leading-tight"
-                                style={{ color: s.text, opacity: 0.7 }}
-                              >
-                                <Clock size={9} className="flex-shrink-0" />
-                                {c.heureDebut} · {formatDuree(c.duree)}
-                              </p>
-                            )}
-                            {c.titre && height >= 56 && (
-                              <p
-                                className="text-[10px] mt-0.5 truncate"
-                                style={{ color: s.text, opacity: 0.6 }}
-                              >
-                                {c.titre}
-                              </p>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => supprimer(c.id)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 rounded p-0.5 hover:bg-black/10 mt-0.5"
-                            style={{ color: s.text }}
-                            title="Supprimer"
-                          >
-                            <Trash2 size={10} />
-                          </button>
+                          )}
+                          {c.titre && height >= 56 && (
+                            <p className="text-[10px] mt-0.5 truncate" style={{ color: s.text, opacity: 0.6 }}>
+                              {c.titre}
+                            </p>
+                          )}
                         </div>
+                        <button
+                          onClick={() => supprimer(c.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 rounded p-0.5 hover:bg-black/10 mt-0.5"
+                          style={{ color: s.text }}
+                          title="Supprimer"
+                        >
+                          <Trash2 size={10} />
+                        </button>
                       </div>
-                    );
-                  })}
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
         </div>
       </div>
 
+      {/* ── Modal ajout ── */}
       {showForm && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50"
           onClick={() => setShowForm(false)}
         >
           <div
-            className="bg-white rounded-[12px] p-6 w-full max-w-md mx-4 shadow-xl"
+            className="bg-white rounded-t-[20px] sm:rounded-[12px] p-6 w-full sm:max-w-md shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold text-[#1a1a1a]">Nouveau cours</h2>
-              <button
-                onClick={() => setShowForm(false)}
-                className="text-[#666666] hover:text-[#1a1a1a] transition-colors"
-              >
+              <button onClick={() => setShowForm(false)} className="text-[#666666] hover:text-[#1a1a1a]">
                 <X size={18} />
               </button>
             </div>
@@ -253,26 +288,14 @@ export default function PlanningPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#666666] mb-1">Type</label>
-                  <select
-                    value={form.type}
-                    onChange={set("type")}
-                    className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]"
-                  >
-                    {Object.entries(TYPES).map(([k, v]) => (
-                      <option key={k} value={k}>{v}</option>
-                    ))}
+                  <select value={form.type} onChange={set("type")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]">
+                    {Object.entries(TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#666666] mb-1">Jour</label>
-                  <select
-                    value={form.jour}
-                    onChange={set("jour")}
-                    className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]"
-                  >
-                    {JOURS_ORDERED.map((j) => (
-                      <option key={j} value={j}>{JOURS_LABELS[j]}</option>
-                    ))}
+                  <select value={form.jour} onChange={set("jour")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]">
+                    {JOURS_ORDERED.map((j) => <option key={j} value={j}>{JOURS_LABELS[j]}</option>)}
                   </select>
                 </div>
               </div>
@@ -280,65 +303,34 @@ export default function PlanningPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#666666] mb-1">Heure de début</label>
-                  <input
-                    type="time"
-                    value={form.heureDebut}
-                    onChange={set("heureDebut")}
-                    className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]"
-                  />
+                  <input type="time" value={form.heureDebut} onChange={set("heureDebut")} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#666666] mb-1">Durée (minutes)</label>
-                  <input
-                    type="number"
-                    value={form.duree}
-                    onChange={set("duree")}
-                    min={15}
-                    step={15}
-                    className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]"
-                  />
+                  <input type="number" value={form.duree} onChange={set("duree")} min={15} step={15} className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]" />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-[#666666] mb-1">Titre (facultatif)</label>
-                <input
-                  type="text"
-                  value={form.titre}
-                  onChange={set("titre")}
-                  placeholder="Ex : Cours débutants"
-                  className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)] placeholder:text-[#aaaaaa]"
-                />
+                <input type="text" value={form.titre} onChange={set("titre")} placeholder="Ex : Cours débutants" className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)] placeholder:text-[#aaaaaa]" />
               </div>
 
               <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="recurrent"
-                  checked={form.recurrent}
-                  onChange={set("recurrent")}
-                  className="accent-[var(--color-primary)]"
-                />
+                <input type="checkbox" id="recurrent" checked={form.recurrent} onChange={set("recurrent")} className="accent-[var(--color-primary)]" />
                 <label htmlFor="recurrent" className="text-sm text-[#1a1a1a]">Cours récurrent (toutes les semaines)</label>
               </div>
 
               <div
-                className="h-10 rounded-[8px] flex items-center justify-center border-2 transition-colors"
-                style={{
-                  backgroundColor: TYPE_COLORS[form.type]?.bg,
-                  borderColor: TYPE_COLORS[form.type]?.border,
-                  color: TYPE_COLORS[form.type]?.text,
-                }}
+                className="h-10 rounded-[8px] flex items-center justify-center border-2"
+                style={{ backgroundColor: TYPE_COLORS[form.type]?.bg, borderColor: TYPE_COLORS[form.type]?.border, color: TYPE_COLORS[form.type]?.text }}
               >
                 <span className="text-xs font-semibold">
                   {JOURS_LABELS[form.jour]} · {TYPES[form.type]} · {form.heureDebut} · {formatDuree(form.duree)}
                 </span>
               </div>
 
-              <button
-                type="submit"
-                className="w-full bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
-              >
+              <button type="submit" className="w-full bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors">
                 Créer le cours
               </button>
             </form>

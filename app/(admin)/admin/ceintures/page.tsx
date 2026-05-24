@@ -1,10 +1,11 @@
-﻿import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import CeintureBadge from "@/components/CeintureBadge";
 import CeintureActions from "./CeintureActions";
 import Link from "next/link";
 import { Award, Settings } from "lucide-react";
 
 const NEXT: Record<string, string> = { BLANCHE: "BLEUE", BLEUE: "VIOLETTE", VIOLETTE: "MARRON", MARRON: "NOIRE" };
+const NEXT_LABEL: Record<string, string> = { BLEUE: "Bleue", VIOLETTE: "Violette", MARRON: "Marron", NOIRE: "Noire" };
 
 export default async function CeinturesPage() {
   const [eleves, criteres] = await Promise.all([
@@ -47,15 +48,17 @@ export default async function CeinturesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#1a1a1a]">Ceintures</h1>
-        <Link href="/admin/ceintures/criteres"
-          className="flex items-center gap-2 border border-[#e5e5e5] text-[#666666] rounded-[8px] px-4 py-2 text-sm font-medium hover:bg-[#f9f9f9] transition-colors">
+        <Link
+          href="/admin/ceintures/criteres"
+          className="flex items-center gap-2 border border-[#e5e5e5] text-[#666666] rounded-[8px] px-4 py-2 text-sm font-medium hover:bg-[#f9f9f9] transition-colors"
+        >
           <Settings size={15} />
           Critères
         </Link>
       </div>
 
       {eligibles.length > 0 && (
-        <div className="bg-[var(--color-primary-bg)] border border-[var(--color-primary-subtle)] rounded-[12px] p-5 mb-6">
+        <div className="bg-[var(--color-primary-bg)] border border-[var(--color-primary-subtle)] rounded-[12px] p-4 sm:p-5 mb-6">
           <h2 className="font-semibold text-[var(--color-primary)] flex items-center gap-2 mb-3">
             <Award size={18} />
             Éligibles à promotion ({eligibles.length})
@@ -63,15 +66,18 @@ export default async function CeinturesPage() {
           <div className="grid gap-3">
             {eligibles.map((e) => (
               <div key={e.id} className="flex items-center justify-between bg-white rounded-[8px] p-3 flex-wrap gap-2">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <CeintureBadge ceinture={e.ceinture} barrettes={e.barrettes} size="sm" />
-                  <span className="text-sm font-medium text-[#1a1a1a]">{e.prenom} {e.nom}</span>
-                  <span className="text-xs text-[#666666]">→ {e.nextBelt?.toLowerCase()}</span>
+                  <span className="text-sm font-medium text-[#1a1a1a] truncate">{e.prenom} {e.nom}</span>
+                  <span className="text-xs text-[#666666] hidden sm:inline">→ {NEXT_LABEL[e.nextBelt!] ?? e.nextBelt}</span>
                 </div>
                 <CeintureActions
-                  eleveId={e.id} nom={`${e.prenom} ${e.nom}`}
-                  ceinture={e.ceinture} barrettes={e.barrettes}
-                  nextBelt={e.nextBelt} eligible={true}
+                  eleveId={e.id}
+                  nom={`${e.prenom} ${e.nom}`}
+                  ceinture={e.ceinture}
+                  barrettes={e.barrettes}
+                  nextBelt={e.nextBelt}
+                  eligible={true}
                 />
               </div>
             ))}
@@ -79,13 +85,66 @@ export default async function CeinturesPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-[12px] shadow-sm overflow-hidden">
+      {/* ── Mobile : cartes ── */}
+      <div className="md:hidden space-y-3">
+        {elevesAvecProgression.map((eleve) => (
+          <div key={eleve.id} className="bg-white rounded-[12px] shadow-sm p-4">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <p className="font-semibold text-sm text-[#1a1a1a]">{eleve.prenom} {eleve.nom}</p>
+                <p className="text-xs text-[#666666] mt-0.5">{eleve.presences.length} cours effectués</p>
+              </div>
+              <CeintureBadge ceinture={eleve.ceinture} barrettes={eleve.barrettes} size="sm" />
+            </div>
+
+            {eleve.nextBelt && (
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs text-[#666666]">
+                    Vers ceinture {NEXT_LABEL[eleve.nextBelt] ?? eleve.nextBelt.toLowerCase()}
+                  </span>
+                  <span className="text-xs font-semibold text-[#1a1a1a]">{eleve.progression}%</span>
+                </div>
+                <div className="bg-[#e5e5e5] rounded-full h-2">
+                  <div
+                    className="bg-[var(--color-primary)] h-2 rounded-full transition-all"
+                    style={{ width: `${eleve.progression}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {!eleve.nextBelt && (
+              <p className="text-xs text-[#aaaaaa] mb-3">Ceinture noire — niveau maximum</p>
+            )}
+
+            <div className="pt-2 border-t border-[#f0f0f0]">
+              <CeintureActions
+                eleveId={eleve.id}
+                nom={`${eleve.prenom} ${eleve.nom}`}
+                ceinture={eleve.ceinture}
+                barrettes={eleve.barrettes}
+                nextBelt={eleve.nextBelt}
+                eligible={eleve.eligible}
+              />
+            </div>
+          </div>
+        ))}
+        {elevesAvecProgression.length === 0 && (
+          <div className="bg-white rounded-[12px] shadow-sm p-8 text-center">
+            <p className="text-sm text-[#666666]">Aucun élève actif</p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Desktop : tableau ── */}
+      <div className="hidden md:block bg-white rounded-[12px] shadow-sm overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#e5e5e5]">
               <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Élève</th>
               <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Ceinture</th>
-              <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3 hidden md:table-cell">Progression</th>
+              <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Progression</th>
               <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Cours</th>
               <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Barrettes / Promotion</th>
             </tr>
@@ -97,7 +156,7 @@ export default async function CeinturesPage() {
                 <td className="px-4 py-3">
                   <CeintureBadge ceinture={eleve.ceinture} barrettes={eleve.barrettes} size="sm" />
                 </td>
-                <td className="px-4 py-3 hidden md:table-cell">
+                <td className="px-4 py-3">
                   {eleve.nextBelt ? (
                     <div className="flex items-center gap-2">
                       <div className="flex-1 bg-[#e5e5e5] rounded-full h-2 max-w-[120px]">
@@ -106,15 +165,18 @@ export default async function CeinturesPage() {
                       <span className="text-xs text-[#666666]">{eleve.progression}%</span>
                     </div>
                   ) : (
-                    <span className="text-xs text-[#666666]">Ceinture max</span>
+                    <span className="text-xs text-[#aaaaaa]">Ceinture max</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-sm text-[#666666]">{eleve.presences.length}</td>
                 <td className="px-4 py-3">
                   <CeintureActions
-                    eleveId={eleve.id} nom={`${eleve.prenom} ${eleve.nom}`}
-                    ceinture={eleve.ceinture} barrettes={eleve.barrettes}
-                    nextBelt={eleve.nextBelt} eligible={eleve.eligible}
+                    eleveId={eleve.id}
+                    nom={`${eleve.prenom} ${eleve.nom}`}
+                    ceinture={eleve.ceinture}
+                    barrettes={eleve.barrettes}
+                    nextBelt={eleve.nextBelt}
+                    eligible={eleve.eligible}
                   />
                 </td>
               </tr>
