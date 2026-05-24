@@ -1,31 +1,32 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Users, CheckSquare, Award, Newspaper, TrendingUp, CreditCard, Settings, X, Eye, EyeOff } from "lucide-react";
+import { Users, CheckSquare, Award, Newspaper, TrendingUp, CreditCard, Settings, X, Eye, EyeOff, Medal } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useCountUp } from "@/hooks/useCountUp";
 
-const CEINTURE_COLORS: Record<string, { bg: string; border?: string }> = {
-  BLANCHE:  { bg: "#f3f4f6", border: "#d1d5db" },
-  BLEUE:    { bg: "#1d4ed8" },
-  VIOLETTE: { bg: "#7c3aed" },
-  MARRON:   { bg: "#92400e" },
-  NOIRE:    { bg: "#111111" },
+/* ── Belt colors ── */
+const BELT_COLORS: Record<string, string> = {
+  BLANCHE: "#d1d5db", BLEUE: "#3b82f6", VIOLETTE: "#8b5cf6", MARRON: "#92400e", NOIRE: "#1a1a1a",
+};
+const BELT_LABELS: Record<string, string> = {
+  BLANCHE: "Blanche", BLEUE: "Bleue", VIOLETTE: "Violette", MARRON: "Marron", NOIRE: "Noire",
 };
 
+/* ── Widgets config ── */
 const WIDGETS_CONFIG = [
-  { id: "kpi_presences",  label: "KPI — Présents aujourd'hui",    group: "kpis" },
-  { id: "kpi_eleves",     label: "KPI — Élèves actifs",           group: "kpis" },
-  { id: "kpi_taux",       label: "KPI — Taux de présence",        group: "kpis" },
-  { id: "kpi_impayes",    label: "KPI — Impayés ce mois",         group: "kpis" },
-  { id: "graph_presences",label: "Graphique présences (6 mois)",  group: "stats" },
-  { id: "distrib_ceintures", label: "Répartition par ceinture",   group: "stats" },
-  { id: "top5",           label: "Top 5 présences ce mois",       group: "stats" },
-  { id: "eligibles",      label: "Éligibles à promotion",         group: "stats" },
-  { id: "last_post",      label: "Dernière actualité",            group: "stats" },
+  { id: "kpi_presences",     label: "Présents aujourd'hui",         group: "kpis" },
+  { id: "kpi_eleves",        label: "Élèves actifs",                group: "kpis" },
+  { id: "kpi_taux",          label: "Taux de présence",             group: "kpis" },
+  { id: "kpi_impayes",       label: "Impayés ce mois",              group: "kpis" },
+  { id: "graph_presences",   label: "Graphique présences (6 mois)", group: "stats" },
+  { id: "distrib_ceintures", label: "Répartition par ceinture",     group: "stats" },
+  { id: "top5",              label: "Top 5 présences ce mois",      group: "stats" },
+  { id: "eligibles",         label: "Éligibles à promotion",        group: "stats" },
+  { id: "last_post",         label: "Dernière actualité",           group: "stats" },
 ];
-
 const DEFAULT_VISIBLE = Object.fromEntries(WIDGETS_CONFIG.map((w) => [w.id, true]));
 const LS_KEY = "dashboard_widgets";
 
@@ -38,6 +39,146 @@ interface Stats {
   lastPost: { titre: string; contenu: string; createdAt: string } | null;
 }
 
+/* ── SVG Area Chart ── */
+function PresenceChart({ data }: { data: { label: string; count: number }[] }) {
+  const W = 500; const H = 110; const PX = 8; const PY = 12;
+  const plotW = W - 2 * PX; const plotH = H - 2 * PY;
+  const max = Math.max(...data.map((d) => d.count), 1);
+  const pts = data.map((d, i) => ({
+    x: PX + (i / Math.max(data.length - 1, 1)) * plotW,
+    y: PY + plotH - (d.count / max) * plotH,
+    ...d,
+  }));
+  const line = pts.reduce((acc, p, i) => {
+    if (i === 0) return `M ${p.x},${p.y}`;
+    const prev = pts[i - 1];
+    const mx = (prev.x + p.x) / 2;
+    return `${acc} C ${mx},${prev.y} ${mx},${p.y} ${p.x},${p.y}`;
+  }, "");
+  const area = pts.length > 1
+    ? `${line} L ${pts[pts.length - 1].x},${H} L ${pts[0].x},${H} Z`
+    : "";
+  return (
+    <div className="w-full">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 110 }}>
+        <defs>
+          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {pts.slice(0, -1).map((p, i) => (
+          <line key={i} x1={p.x} y1={PY + plotH} x2={p.x} y2={p.y}
+            stroke="var(--color-primary)" strokeOpacity="0.06" strokeWidth="1" strokeDasharray="2 3" />
+        ))}
+        <path d={area} fill="url(#areaGrad)" />
+        <path d={line} fill="none" stroke="var(--color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        {pts.map((p, i) => (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r="4" fill="var(--color-primary)" />
+            <circle cx={p.x} cy={p.y} r="7" fill="var(--color-primary)" fillOpacity="0.15" />
+            <text x={p.x} y={p.y - 9} textAnchor="middle" fontSize="9" fill="var(--c-text-2, #666666)">{p.count}</text>
+          </g>
+        ))}
+      </svg>
+      <div className="flex justify-between mt-1 px-2">
+        {data.map((d, i) => (
+          <span key={i} className="text-[10px] capitalize" style={{ color: "var(--c-text-2)" }}>{d.label}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── SVG Donut Chart ── */
+function DonutChart({ data, total }: { data: Record<string, number>; total: number }) {
+  const cx = 55; const cy = 55; const R = 42; const r = 28;
+  const BELTS = ["BLANCHE", "BLEUE", "VIOLETTE", "MARRON", "NOIRE"];
+
+  const toRad = (deg: number) => (deg - 90) * Math.PI / 180;
+  const polar = (radius: number, deg: number) => ({
+    x: cx + radius * Math.cos(toRad(deg)),
+    y: cy + radius * Math.sin(toRad(deg)),
+  });
+  const arcPath = (s: number, e: number) => {
+    if (Math.abs(e - s) >= 360) e = s + 359.99;
+    const o1 = polar(R, s); const o2 = polar(R, e);
+    const i1 = polar(r, e); const i2 = polar(r, s);
+    const lg = e - s > 180 ? 1 : 0;
+    return `M ${o1.x} ${o1.y} A ${R} ${R} 0 ${lg} 1 ${o2.x} ${o2.y} L ${i1.x} ${i1.y} A ${r} ${r} 0 ${lg} 0 ${i2.x} ${i2.y} Z`;
+  };
+
+  let deg = 0;
+  const segs = BELTS.map((belt) => {
+    const count = data[belt] ?? 0;
+    const frac = total > 0 ? count / total : 0;
+    const start = deg;
+    deg += frac * 360;
+    return { belt, count, frac, start, end: deg };
+  });
+
+  return (
+    <div className="flex items-center gap-4">
+      <svg width="110" height="110" viewBox="0 0 110 110" className="flex-shrink-0">
+        <circle cx={cx} cy={cy} r={(R + r) / 2} fill="none"
+          stroke="var(--c-border, #e5e5e5)" strokeWidth={R - r} />
+        {segs.filter((s) => s.frac > 0.001).map((s) => (
+          <path key={s.belt} d={arcPath(s.start, s.end)} fill={BELT_COLORS[s.belt]} />
+        ))}
+        <text x={cx} y={cy - 6} textAnchor="middle" fontSize="10" fill="var(--c-text-2, #666)">Total</text>
+        <text x={cx} y={cy + 10} textAnchor="middle" fontSize="18" fontWeight="bold" fill="var(--c-text-1, #1a1a1a)">{total}</text>
+      </svg>
+      <div className="flex-1 space-y-2.5">
+        {BELTS.map((belt) => {
+          const count = data[belt] ?? 0;
+          const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+          return (
+            <div key={belt} className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: BELT_COLORS[belt], outline: belt === "BLANCHE" ? "1px solid #ccc" : "none" }} />
+              <span className="text-xs w-14" style={{ color: "var(--c-text-2)" }}>{BELT_LABELS[belt]}</span>
+              <div className="flex-1 rounded-full h-1.5" style={{ backgroundColor: "var(--c-border)" }}>
+                <div className="h-1.5 rounded-full animate-progress"
+                  style={{ width: `${pct}%`, backgroundColor: BELT_COLORS[belt] }} />
+              </div>
+              <span className="text-xs font-semibold w-4 text-right" style={{ color: "var(--c-text-1)" }}>{count}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── KPI Card ── */
+function KpiCard({ label, value, sub, icon: Icon, link, linkLabel, delay = 0 }: {
+  label: string; value: number; sub?: string; icon: React.ElementType;
+  link?: string; linkLabel?: string; delay?: number;
+}) {
+  const count = useCountUp(value);
+  return (
+    <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up relative overflow-hidden"
+      style={{ animationDelay: `${delay}ms` }}>
+      <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-[0.06]"
+        style={{ backgroundColor: "var(--color-primary)" }} />
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-sm font-medium" style={{ color: "var(--c-text-2)" }}>{label}</span>
+        <div className="w-9 h-9 rounded-[10px] flex items-center justify-center"
+          style={{ backgroundColor: "var(--color-primary-subtle)" }}>
+          <Icon size={17} style={{ color: "var(--color-primary)" }} />
+        </div>
+      </div>
+      <p className="text-4xl font-bold tracking-tight" style={{ color: "var(--c-text-1)" }}>{count}</p>
+      {sub && <p className="text-xs mt-1.5" style={{ color: "var(--c-text-3)" }}>{sub}</p>}
+      {link && linkLabel && (
+        <Link href={link} className="text-xs mt-2 block hover:underline font-medium"
+          style={{ color: "var(--color-primary)" }}>{linkLabel}</Link>
+      )}
+    </div>
+  );
+}
+
+/* ── Main ── */
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [visible, setVisible] = useState<Record<string, boolean>>(DEFAULT_VISIBLE);
@@ -45,9 +186,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const saved = localStorage.getItem(LS_KEY);
-    if (saved) {
-      try { setVisible({ ...DEFAULT_VISIBLE, ...JSON.parse(saved) }); } catch { /* ignore */ }
-    }
+    if (saved) { try { setVisible({ ...DEFAULT_VISIBLE, ...JSON.parse(saved) }); } catch { /* ignore */ } }
     fetch("/api/dashboard").then((r) => r.json()).then(setStats);
   }, []);
 
@@ -58,26 +197,34 @@ export default function DashboardPage() {
       return next;
     });
   };
-
   const show = (id: string) => visible[id] !== false;
 
   if (!stats) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-sm text-[#666666]">Chargement...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 rounded-full animate-spin"
+            style={{ borderColor: "var(--color-primary-subtle)", borderTopColor: "var(--color-primary)" }} />
+          <p className="text-sm" style={{ color: "var(--c-text-2)" }}>Chargement...</p>
+        </div>
       </div>
     );
   }
 
-  const maxPresences = Math.max(...stats.graphPresences.map((m) => m.count), 1);
   const totalEleves = stats.kpis.totalEleves;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#1a1a1a]">Tableau de bord</h1>
+      <div className="flex items-center justify-between mb-7">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1a1a1a]">Tableau de bord</h1>
+          <p className="text-sm mt-0.5" style={{ color: "var(--c-text-2)" }}>
+            {format(new Date(), "EEEE d MMMM yyyy", { locale: fr })}
+          </p>
+        </div>
         <button onClick={() => setShowSettings(true)}
-          className="flex items-center gap-2 border border-[#e5e5e5] text-[#666666] rounded-[8px] px-3 py-2 text-sm hover:bg-[#f9f9f9] transition-colors">
+          className="flex items-center gap-2 text-sm rounded-[8px] px-3 py-2 transition-colors"
+          style={{ border: "1px solid var(--c-border)", color: "var(--c-text-2)", backgroundColor: "var(--c-card)" }}>
           <Settings size={15} />
           Personnaliser
         </button>
@@ -87,182 +234,166 @@ export default function DashboardPage() {
       {WIDGETS_CONFIG.filter((w) => w.group === "kpis" && show(w.id)).length > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {show("kpi_presences") && (
-            <div className="bg-white rounded-[12px] shadow-sm p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[#666666] text-sm">Présents aujourd&apos;hui</span>
-                <CheckSquare size={18} className="text-[var(--color-primary)]" />
-              </div>
-              <p className="text-3xl font-bold text-[#1a1a1a]">{stats.kpis.presencesAujourdhui}</p>
-              <p className="text-xs text-[#666666] mt-1">sur {totalEleves} actifs</p>
-            </div>
+            <KpiCard label="Présents aujourd'hui" value={stats.kpis.presencesAujourdhui}
+              sub={`sur ${totalEleves} actifs`} icon={CheckSquare} delay={0} />
           )}
           {show("kpi_eleves") && (
-            <div className="bg-white rounded-[12px] shadow-sm p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[#666666] text-sm">Élèves actifs</span>
-                <Users size={18} className="text-[var(--color-primary)]" />
-              </div>
-              <p className="text-3xl font-bold text-[#1a1a1a]">{totalEleves}</p>
-              <Link href="/admin/eleves" className="text-xs text-[var(--color-primary)] hover:underline mt-1 block">Voir la liste</Link>
-            </div>
+            <KpiCard label="Élèves actifs" value={totalEleves}
+              icon={Users} link="/admin/eleves" linkLabel="Voir la liste" delay={80} />
           )}
           {show("kpi_taux") && (
-            <div className="bg-white rounded-[12px] shadow-sm p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[#666666] text-sm">Taux présence (mois)</span>
-                <TrendingUp size={18} className="text-[var(--color-primary)]" />
-              </div>
-              <p className="text-3xl font-bold text-[#1a1a1a]">{stats.kpis.tauxPresence}%</p>
-              <p className="text-xs text-[#666666] mt-1">{stats.kpis.nbFideles} fidèles (≥3/mois)</p>
-            </div>
+            <KpiCard label="Taux de présence" value={stats.kpis.tauxPresence}
+              sub={`${stats.kpis.nbFideles} fidèles (≥3/mois)`} icon={TrendingUp} delay={160} />
           )}
           {show("kpi_impayes") && (
-            <div className="bg-white rounded-[12px] shadow-sm p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[#666666] text-sm">Impayés ce mois</span>
-                <CreditCard size={18} className="text-[var(--color-primary)]" />
-              </div>
-              <p className="text-3xl font-bold text-[#1a1a1a]">{stats.kpis.paiementsImpayesCeMois}</p>
-              <Link href="/admin/paiements" className="text-xs text-[var(--color-primary)] hover:underline mt-1 block">Voir paiements</Link>
-            </div>
+            <KpiCard label="Impayés ce mois" value={stats.kpis.paiementsImpayesCeMois}
+              icon={CreditCard} link="/admin/paiements" linkLabel="Voir paiements" delay={240} />
           )}
         </div>
       )}
 
-      {/* Ligne 1 : graphique + répartition */}
+      {/* Charts row */}
       {(show("graph_presences") || show("distrib_ceintures")) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
           {show("graph_presences") && (
-            <div className="bg-white rounded-[12px] shadow-sm p-5">
-              <h2 className="font-semibold text-[#1a1a1a] mb-4">Présences — 6 derniers mois</h2>
-              <div className="flex items-end gap-2 h-32">
-                {stats.graphPresences.map((m, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                    <span className="text-xs text-[#666666]">{m.count}</span>
-                    <div className="w-full bg-[var(--color-primary)] rounded-t-[4px]"
-                      style={{ height: `${Math.round((m.count / maxPresences) * 96)}px`, minHeight: m.count > 0 ? "4px" : "0" }} />
-                    <span className="text-xs text-[#666666] capitalize">{m.label}</span>
-                  </div>
-                ))}
+            <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-[#1a1a1a]">Présences — 6 mois</h2>
+                <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                  style={{ backgroundColor: "var(--color-primary-subtle)", color: "var(--color-primary)" }}>
+                  {stats.kpis.presencesMois} ce mois
+                </span>
               </div>
+              <PresenceChart data={stats.graphPresences} />
             </div>
           )}
           {show("distrib_ceintures") && (
-            <div className="bg-white rounded-[12px] shadow-sm p-5">
+            <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "180ms" }}>
               <h2 className="font-semibold text-[#1a1a1a] mb-4">Répartition par ceinture</h2>
-              <div className="space-y-3">
-                {["BLANCHE", "BLEUE", "VIOLETTE", "MARRON", "NOIRE"].map((belt) => {
-                  const count = stats.distribCeinture[belt] ?? 0;
-                  const pct = totalEleves > 0 ? Math.round((count / totalEleves) * 100) : 0;
-                  return (
-                    <div key={belt} className="flex items-center gap-3">
-                      <span className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: CEINTURE_COLORS[belt].bg, border: CEINTURE_COLORS[belt].border ? `1px solid ${CEINTURE_COLORS[belt].border}` : undefined }} />
-                      <span className="text-xs text-[#666666] w-16 capitalize">{belt.toLowerCase()}</span>
-                      <div className="flex-1 bg-[#e5e5e5] rounded-full h-2">
-                        <div className="bg-[var(--color-primary)] h-2 rounded-full" style={{ width: `${pct}%` }} />
-                      </div>
-                      <span className="text-xs text-[#666666] w-8 text-right">{count}</span>
-                    </div>
-                  );
-                })}
-              </div>
+              <DonutChart data={stats.distribCeinture} total={totalEleves} />
             </div>
           )}
         </div>
       )}
 
-      {/* Ligne 2 : top5 + eligibles + dernière actu */}
+      {/* Bottom row */}
       {(show("top5") || show("eligibles") || show("last_post")) && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {show("top5") && stats.top5.length > 0 && (
-            <div className="bg-white rounded-[12px] shadow-sm p-5">
-              <h2 className="font-semibold text-[#1a1a1a] mb-4">Top présences ce mois</h2>
-              <ol className="space-y-2">
+            <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "200ms" }}>
+              <h2 className="font-semibold text-[#1a1a1a] mb-4 flex items-center gap-2">
+                <Medal size={16} style={{ color: "var(--color-primary)" }} />
+                Top présences ce mois
+              </h2>
+              <ol className="space-y-3">
                 {stats.top5.map((e, i) => (
                   <li key={e.id} className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-[var(--color-primary)] w-4">{i + 1}</span>
-                    <span className="text-sm text-[#1a1a1a] flex-1">{e.prenom} {e.nom}</span>
-                    <span className="text-xs font-semibold text-[#1a1a1a]">{e.count} cours</span>
+                    <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                      style={{
+                        backgroundColor: i === 0 ? "#fbbf24" : i === 1 ? "#94a3b8" : i === 2 ? "#b45309" : "var(--c-border)",
+                        color: i < 3 ? "white" : "var(--c-text-2)",
+                      }}>
+                      {i + 1}
+                    </span>
+                    <span className="text-sm flex-1 text-[#1a1a1a] truncate">{e.prenom} {e.nom}</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: "var(--color-primary-subtle)", color: "var(--color-primary)" }}>
+                      {e.count}
+                    </span>
                   </li>
                 ))}
               </ol>
             </div>
           )}
           {show("eligibles") && stats.eligibles.length > 0 && (
-            <div className="bg-white rounded-[12px] shadow-sm p-5">
+            <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "280ms" }}>
               <h2 className="font-semibold text-[#1a1a1a] mb-4 flex items-center gap-2">
-                <Award size={16} className="text-[var(--color-primary)]" />
-                Éligibles à promotion ({stats.eligibles.length})
+                <Award size={16} style={{ color: "var(--color-primary)" }} />
+                Éligibles ({stats.eligibles.length})
               </h2>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {stats.eligibles.slice(0, 5).map((e) => (
-                  <li key={e.id} className="flex items-center justify-between">
-                    <span className="text-sm text-[#1a1a1a]">{e.prenom} {e.nom}</span>
-                    <span className="text-xs text-[var(--color-primary)] font-medium">→ {e.nextBelt.toLowerCase()}</span>
+                  <li key={e.id} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: BELT_COLORS[e.ceinture] ?? "#999" }} />
+                      <span className="text-sm text-[#1a1a1a] truncate">{e.prenom} {e.nom}</span>
+                    </div>
+                    <span className="text-xs font-medium flex-shrink-0"
+                      style={{ color: BELT_COLORS[e.nextBelt] ?? "var(--color-primary)" }}>
+                      → {BELT_LABELS[e.nextBelt]}
+                    </span>
                   </li>
                 ))}
               </ul>
-              <Link href="/admin/ceintures" className="text-xs text-[var(--color-primary)] hover:underline mt-3 block">Voir tous →</Link>
+              <Link href="/admin/ceintures" className="text-xs mt-3 block hover:underline font-medium"
+                style={{ color: "var(--color-primary)" }}>Voir tous →</Link>
             </div>
           )}
           {show("last_post") && stats.lastPost && (
-            <div className="bg-white rounded-[12px] shadow-sm p-5">
+            <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "360ms" }}>
               <h2 className="font-semibold text-[#1a1a1a] mb-4 flex items-center gap-2">
-                <Newspaper size={16} className="text-[var(--color-primary)]" />
+                <Newspaper size={16} style={{ color: "var(--color-primary)" }} />
                 Dernière actualité
               </h2>
-              <p className="text-sm font-medium text-[#1a1a1a]">{stats.lastPost.titre}</p>
-              <p className="text-xs text-[#666666] mt-1">
+              <p className="text-sm font-semibold text-[#1a1a1a]">{stats.lastPost.titre}</p>
+              <p className="text-xs mt-1" style={{ color: "var(--c-text-3)" }}>
                 {format(new Date(stats.lastPost.createdAt), "d MMMM yyyy", { locale: fr })}
               </p>
-              <p className="text-sm text-[#666666] mt-2 line-clamp-2">{stats.lastPost.contenu}</p>
-              <Link href="/admin/actualites" className="text-xs text-[var(--color-primary)] hover:underline mt-3 block">Voir toutes →</Link>
+              <p className="text-sm mt-2 line-clamp-3" style={{ color: "var(--c-text-2)" }}>
+                {stats.lastPost.contenu}
+              </p>
+              <Link href="/admin/actualites" className="text-xs mt-3 block hover:underline font-medium"
+                style={{ color: "var(--color-primary)" }}>Voir toutes →</Link>
             </div>
           )}
         </div>
       )}
 
-      {/* Panneau de personnalisation */}
+      {/* Settings panel */}
       {showSettings && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex justify-end" onClick={() => setShowSettings(false)}>
-          <div className="bg-white h-full w-80 shadow-xl p-6 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex justify-end" onClick={() => setShowSettings(false)}>
+          <div className="h-full w-80 shadow-2xl p-6 overflow-y-auto"
+            style={{ backgroundColor: "var(--c-card)" }}
+            onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-bold text-[#1a1a1a]">Personnaliser le dashboard</h2>
-              <button onClick={() => setShowSettings(false)} className="text-[#666666] hover:text-[#1a1a1a]">
-                <X size={18} />
+              <h2 className="font-bold text-[#1a1a1a]">Personnaliser</h2>
+              <button onClick={() => setShowSettings(false)}>
+                <X size={18} style={{ color: "var(--c-text-2)" }} />
               </button>
             </div>
-
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-[#666666] uppercase tracking-wide mb-2">Indicateurs clés</p>
+              <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--c-text-3)" }}>Indicateurs clés</p>
               {WIDGETS_CONFIG.filter((w) => w.group === "kpis").map((w) => (
                 <button key={w.id} onClick={() => toggle(w.id)}
-                  className="flex items-center justify-between w-full px-3 py-2.5 rounded-[8px] hover:bg-[#f9f9f9] transition-colors">
-                  <span className="text-sm text-[#1a1a1a]">{w.label.replace("KPI — ", "")}</span>
+                  className="flex items-center justify-between w-full px-3 py-2.5 rounded-[8px] transition-colors"
+                  style={{ color: "var(--c-text-1)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--c-hover)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>
+                  <span className="text-sm">{w.label.replace("KPI — ", "")}</span>
                   {show(w.id)
-                    ? <Eye size={16} className="text-[var(--color-primary)]" />
-                    : <EyeOff size={16} className="text-[#bbbbbb]" />}
+                    ? <Eye size={16} style={{ color: "var(--color-primary)" }} />
+                    : <EyeOff size={16} style={{ color: "var(--c-text-3)" }} />}
                 </button>
               ))}
-
-              <p className="text-xs font-semibold text-[#666666] uppercase tracking-wide mb-2 mt-5">Widgets</p>
+              <p className="text-xs font-semibold uppercase tracking-wide mb-2 mt-5" style={{ color: "var(--c-text-3)" }}>Widgets</p>
               {WIDGETS_CONFIG.filter((w) => w.group === "stats").map((w) => (
                 <button key={w.id} onClick={() => toggle(w.id)}
-                  className="flex items-center justify-between w-full px-3 py-2.5 rounded-[8px] hover:bg-[#f9f9f9] transition-colors">
-                  <span className="text-sm text-[#1a1a1a]">{w.label}</span>
+                  className="flex items-center justify-between w-full px-3 py-2.5 rounded-[8px] transition-colors"
+                  style={{ color: "var(--c-text-1)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--c-hover)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>
+                  <span className="text-sm">{w.label}</span>
                   {show(w.id)
-                    ? <Eye size={16} className="text-[var(--color-primary)]" />
-                    : <EyeOff size={16} className="text-[#bbbbbb]" />}
+                    ? <Eye size={16} style={{ color: "var(--color-primary)" }} />
+                    : <EyeOff size={16} style={{ color: "var(--c-text-3)" }} />}
                 </button>
               ))}
             </div>
-
-            <button onClick={() => {
-              setVisible(DEFAULT_VISIBLE);
-              localStorage.removeItem(LS_KEY);
-            }} className="mt-6 text-xs text-[#666666] hover:text-[var(--color-primary)] transition-colors">
-              Réinitialiser l&apos;affichage par défaut
+            <button onClick={() => { setVisible(DEFAULT_VISIBLE); localStorage.removeItem(LS_KEY); }}
+              className="mt-6 text-xs transition-colors hover:underline"
+              style={{ color: "var(--c-text-2)" }}>
+              Réinitialiser l&apos;affichage
             </button>
           </div>
         </div>

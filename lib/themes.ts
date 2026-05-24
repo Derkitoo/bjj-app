@@ -17,3 +17,11 @@ export const applyTheme = (key: ThemeKey) => {
   r.style.setProperty("--color-primary-bg", t.bg);
   r.style.setProperty("--color-sidebar", t.sidebar);
 };
+
+export const applyDarkMode = (dark: boolean) => {
+  if (dark) {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+};
