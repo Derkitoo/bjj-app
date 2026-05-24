@@ -79,7 +79,7 @@ export default async function ElevesPage({
                   {eleve.email && <p className="text-xs text-[#666666]">{eleve.email}</p>}
                 </td>
                 <td className="px-4 py-3">
-                  <CeintureBadge ceinture={eleve.ceinture} size="sm" />
+                  <CeintureBadge ceinture={eleve.ceinture} barrettes={eleve.barrettes} size="sm" />
                 </td>
                 <td className="px-4 py-3 hidden sm:table-cell text-sm text-[#666666]">
                   {format(new Date(eleve.dateInscription), "d MMM yyyy", { locale: fr })}

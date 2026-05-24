@@ -64,7 +64,7 @@ export default async function CeinturesPage() {
             {eligibles.map((e) => (
               <div key={e.id} className="flex items-center justify-between bg-white rounded-[8px] p-3">
                 <div className="flex items-center gap-3">
-                  <CeintureBadge ceinture={e.ceinture} size="sm" />
+                  <CeintureBadge ceinture={e.ceinture} barrettes={e.barrettes} size="sm" />
                   <span className="text-sm font-medium text-[#1a1a1a]">{e.prenom} {e.nom}</span>
                   <span className="text-xs text-[#666666]">→ {e.nextBelt?.toLowerCase()}</span>
                 </div>

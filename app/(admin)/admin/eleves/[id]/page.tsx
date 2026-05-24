@@ -47,7 +47,7 @@ export default async function EleveDetailPage({ params }: { params: Promise<{ id
           <dl className="space-y-3">
             <div>
               <dt className="text-xs text-[#666666]">Ceinture</dt>
-              <dd className="mt-1"><CeintureBadge ceinture={eleve.ceinture} /></dd>
+              <dd className="mt-1"><CeintureBadge ceinture={eleve.ceinture} barrettes={eleve.barrettes} /></dd>
             </div>
             {eleve.email && (
               <div>
@@ -174,7 +174,7 @@ export default async function EleveDetailPage({ params }: { params: Promise<{ id
           <h2 className="font-semibold text-[#1a1a1a] mb-4">Historique ceintures</h2>
           <ul className="space-y-3">
             <li className="flex items-center justify-between">
-              <CeintureBadge ceinture={eleve.ceinture} size="sm" />
+              <CeintureBadge ceinture={eleve.ceinture} barrettes={eleve.barrettes} size="sm" />
               <span className="text-xs text-[#666666]">Actuelle</span>
             </li>
             {eleve.promotions.map((p) => (

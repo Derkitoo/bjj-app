@@ -7,7 +7,7 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 
 interface FormData {
   nom: string; prenom: string; email: string; telephone: string;
-  dateNaissance: string; ceinture: string; notes: string; actif: boolean;
+  dateNaissance: string; ceinture: string; barrettes: number; notes: string; actif: boolean;
   poids: string; taille: string; adresse: string; ville: string;
   codePostal: string; contactUrgence: string; telUrgence: string;
   niveauSport: string; objectifs: string; medical: string;
@@ -15,7 +15,7 @@ interface FormData {
 
 const defaultForm: FormData = {
   nom: "", prenom: "", email: "", telephone: "", dateNaissance: "",
-  ceinture: "BLANCHE", notes: "", actif: true,
+  ceinture: "BLANCHE", barrettes: 0, notes: "", actif: true,
   poids: "", taille: "", adresse: "", ville: "", codePostal: "",
   contactUrgence: "", telUrgence: "", niveauSport: "", objectifs: "", medical: "",
 };
@@ -40,6 +40,7 @@ export default function ModifierElevePage() {
           telephone: eleve.telephone ?? "",
           dateNaissance: eleve.dateNaissance ? eleve.dateNaissance.split("T")[0] : "",
           ceinture: eleve.ceinture ?? "BLANCHE",
+          barrettes: eleve.barrettes ?? 0,
           notes: eleve.notes ?? "",
           actif: eleve.actif ?? true,
           poids: eleve.poids != null ? String(eleve.poids) : "",
@@ -137,6 +138,21 @@ export default function ModifierElevePage() {
                 <option value="MARRON">Marron</option>
                 <option value="NOIRE">Noire</option>
               </select>
+            </div>
+          </div>
+          <div>
+            <label className={labelClass}>Barrettes (0 à 4)</label>
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={() => setForm((f) => ({ ...f, barrettes: Math.max(0, f.barrettes - 1) }))}
+                className="w-8 h-8 rounded-full border border-[#e5e5e5] text-lg font-bold text-[#666666] hover:border-[#cc0000] hover:text-[#cc0000] transition-colors flex items-center justify-center">−</button>
+              <div className="flex items-center gap-1.5">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <span key={i} className={`w-3 h-5 rounded-sm ${i < form.barrettes ? "bg-[#cc0000]" : "bg-[#e5e5e5]"}`} />
+                ))}
+              </div>
+              <button type="button" onClick={() => setForm((f) => ({ ...f, barrettes: Math.min(4, f.barrettes + 1) }))}
+                className="w-8 h-8 rounded-full border border-[#e5e5e5] text-lg font-bold text-[#666666] hover:border-[#cc0000] hover:text-[#cc0000] transition-colors flex items-center justify-center">+</button>
+              <span className="text-sm text-[#666666]">{form.barrettes}/4</span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">

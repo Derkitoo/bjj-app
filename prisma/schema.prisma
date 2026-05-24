@@ -43,6 +43,7 @@ model Eleve {
   actif           Boolean     @default(true)
   notes           String?
   ceinture        String      @default("BLANCHE")
+  barrettes       Int         @default(0)
   user            User?
   presences       Presence[]
   promotions      Promotion[]

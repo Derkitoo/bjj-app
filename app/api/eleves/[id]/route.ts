@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const body = await req.json();
   const {
-    nom, prenom, email, telephone, dateNaissance, ceinture, notes, actif,
+    nom, prenom, email, telephone, dateNaissance, ceinture, barrettes, notes, actif,
     poids, taille, adresse, ville, codePostal, contactUrgence, telUrgence,
     niveauSport, objectifs, medical,
   } = body;
@@ -42,6 +42,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       telephone: telephone || null,
       dateNaissance: dateNaissance ? new Date(dateNaissance) : null,
       ceinture,
+      barrettes: barrettes ?? 0,
       notes: notes || null,
       actif,
       poids: poids ? parseFloat(poids) : null,
