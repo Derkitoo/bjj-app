@@ -18,28 +18,13 @@ export async function GET() {
     where: { id: eleveId },
     include: {
       presences: { orderBy: { date: "desc" } },
-      promotions: { orderBy: { date: "desc" }, take: 1 },
     },
   });
 
   if (!eleve) return NextResponse.json({ error: "Élève introuvable" }, { status: 404 });
 
   const nextBelt = NEXT_BELT[eleve.ceinture] ?? null;
-  let progression = 100;
-
-  if (nextBelt) {
-    const critere = await prisma.criterePromotion.findUnique({ where: { ceintureCible: nextBelt } });
-    if (critere) {
-      const lastPromo = eleve.promotions[0];
-      const refDate = lastPromo ? new Date(lastPromo.date) : new Date(eleve.dateInscription);
-      const moisDepuis = (today.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
-      const progCours = critere.minCours > 0 ? Math.min(eleve.presences.length / critere.minCours, 1) : 1;
-      const progMois = critere.minMois > 0 ? Math.min(moisDepuis / critere.minMois, 1) : 1;
-      progression = Math.round(((progCours + progMois) / 2) * 100);
-    } else {
-      progression = 0;
-    }
-  }
+  const progression = nextBelt ? Math.round((eleve.barrettes / 4) * 100) : 100;
 
   const presencesMois = eleve.presences.filter(
     (p) => new Date(p.date) >= startOfMonth(today)
@@ -54,6 +39,5 @@ export async function GET() {
     presencesMois,
     nextBelt,
     progression,
-    dateInscription: eleve.dateInscription.toISOString(),
   });
 }
