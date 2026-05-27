@@ -51,6 +51,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ success: true });
   }
 
+  if (action === "changeRole") {
+    if (id === currentUserId) {
+      return NextResponse.json({ error: "Impossible de changer son propre rôle" }, { status: 400 });
+    }
+    const { role } = body;
+    if (!["ADMIN", "PROF", "ELEVE"].includes(role)) {
+      return NextResponse.json({ error: "Rôle invalide" }, { status: 400 });
+    }
+    await prisma.user.update({ where: { id }, data: { role } });
+    return NextResponse.json({ success: true });
+  }
+
   if (action === "changeEmail") {
     const { email } = body;
     if (!email) return NextResponse.json({ error: "Email requis" }, { status: 400 });

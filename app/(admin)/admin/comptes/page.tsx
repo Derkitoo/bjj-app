@@ -56,6 +56,7 @@ export default function ComptesPage() {
 
   const [editEmail, setEditEmail] = useState<{ id: string; value: string } | null>(null);
   const [emailLoading, setEmailLoading] = useState(false);
+  const [roleLoading, setRoleLoading] = useState<string | null>(null);
 
   const charger = () => fetch("/api/comptes").then((r) => r.json()).then(setComptes);
 
@@ -147,6 +148,19 @@ export default function ComptesPage() {
       setMdpOk(false);
       setMdpForm({ ancienMdp: "", nouveauMdp: "", confirmer: "" });
     }, 1800);
+  };
+
+  const changerRole = async (id: string, role: string) => {
+    setRoleLoading(id);
+    const res = await fetch(`/api/comptes/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "changeRole", role }),
+    });
+    setRoleLoading(null);
+    if (res.ok) {
+      setComptes((prev) => prev.map((c) => c.id === id ? { ...c, role } : c));
+    }
   };
 
   const sauvegarderEmail = async (id: string) => {
@@ -317,9 +331,22 @@ export default function ComptesPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_BADGE[c.role] ?? "bg-gray-100 text-gray-600"}`}>
-                      {ROLE_LABEL[c.role] ?? c.role}
-                    </span>
+                    {isSelf ? (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_BADGE[c.role] ?? "bg-gray-100 text-gray-600"}`}>
+                        {ROLE_LABEL[c.role] ?? c.role}
+                      </span>
+                    ) : (
+                      <select
+                        value={c.role}
+                        disabled={roleLoading === c.id}
+                        onChange={(e) => changerRole(c.id, e.target.value)}
+                        className={`text-xs rounded-[6px] px-2 py-0.5 font-medium border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] ${ROLE_BADGE[c.role] ?? "bg-gray-100 text-gray-600"}`}
+                      >
+                        <option value="ADMIN">Admin</option>
+                        <option value="PROF">Professeur</option>
+                        <option value="ELEVE">Élève</option>
+                      </select>
+                    )}
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell text-sm text-[#666666]">
                     {format(new Date(c.createdAt), "d MMM yyyy", { locale: fr })}
