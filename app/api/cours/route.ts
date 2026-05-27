@@ -14,6 +14,17 @@ export async function GET() {
   return NextResponse.json(cours);
 }
 
+export async function DELETE(_req: NextRequest) {
+  const session = await auth();
+  if (!session || (session.user as { role: string }).role !== "ADMIN") {
+    return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+  }
+
+  await prisma.presence.deleteMany({});
+  await prisma.cours.deleteMany({});
+  return NextResponse.json({ success: true });
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session || (session.user as { role: string }).role !== "ADMIN") {
