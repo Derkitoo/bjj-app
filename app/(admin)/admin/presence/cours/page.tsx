@@ -41,10 +41,18 @@ const TYPE_DOTS: Record<string, string> = { GI: "#3b82f6", NO_GI: "#8b5cf6", KID
 
 const BELT_ORDER: Record<string, number> = { NOIRE: 0, MARRON: 1, VIOLETTE: 2, BLEUE: 3, BLANCHE: 4 };
 
-const formatDuree = (min: number) => {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return h ? (m ? `${h}h${m}` : `${h}h`) : `${min}min`;
+const formatHeure = (time: string): string => {
+  const [h, m] = time.split(":").map(Number);
+  return m > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+};
+
+const formatPlage = (heureDebut: string, duree: number): string => {
+  const [h, m] = heureDebut.split(":").map(Number);
+  const totalMin = h * 60 + m + duree;
+  const endH = Math.floor(totalMin / 60) % 24;
+  const endM = totalMin % 60;
+  const fin = endM > 0 ? `${endH}h${String(endM).padStart(2, "0")}` : `${endH}h`;
+  return `${formatHeure(heureDebut)} → ${fin}`;
 };
 
 function countdownStr(expires: number): string {
@@ -224,7 +232,7 @@ export default function PresenceCoursPage() {
                           </div>
                           <p className="text-xs text-[#999999] flex items-center gap-1 mt-0.5">
                             <Clock size={10} />
-                            {c.heureDebut} · {formatDuree(c.duree)}
+                            {formatPlage(c.heureDebut, c.duree)}
                           </p>
                         </div>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -272,7 +280,7 @@ export default function PresenceCoursPage() {
                 </div>
                 <p className="text-xs text-[#999999] mt-0.5 flex items-center gap-1">
                   <Clock size={10} />
-                  {selected.heureDebut} · {formatDuree(selected.duree)}
+                  {formatPlage(selected.heureDebut, selected.duree)}
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-wrap">

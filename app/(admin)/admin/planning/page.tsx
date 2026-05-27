@@ -65,11 +65,18 @@ const timeToY = (time: string) => {
   return (h - HOUR_START) * PX_PER_HOUR + (m / 60) * PX_PER_HOUR;
 };
 
-const formatDuree = (min: number) => {
-  if (min < 60) return `${min}min`;
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return m ? `${h}h${m}` : `${h}h`;
+const formatHeure = (time: string): string => {
+  const [h, m] = time.split(":").map(Number);
+  return m > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+};
+
+const formatPlage = (heureDebut: string, duree: number): string => {
+  const [h, m] = heureDebut.split(":").map(Number);
+  const totalMin = h * 60 + m + duree;
+  const endH = Math.floor(totalMin / 60) % 24;
+  const endM = totalMin % 60;
+  const fin = endM > 0 ? `${endH}h${String(endM).padStart(2, "0")}` : `${endH}h`;
+  return `${formatHeure(heureDebut)} → ${fin}`;
 };
 
 const DEFAULT_FORM: FormState = {
@@ -244,7 +251,7 @@ export default function PlanningPage() {
                           </div>
                           <p className="text-xs text-[#666666] mt-0.5 flex items-center gap-1">
                             <Clock size={11} />
-                            {c.heureDebut} · {formatDuree(c.duree)}
+                            {formatPlage(c.heureDebut, c.duree)}
                           </p>
                           {c.titre && <p className="text-xs text-[#999999] mt-0.5 italic">{c.titre}</p>}
                         </div>
@@ -327,7 +334,7 @@ export default function PlanningPage() {
                             {height >= 36 && (
                               <p className="text-[10px] mt-0.5 flex items-center gap-0.5 leading-tight" style={{ color: s.text, opacity: 0.75 }}>
                                 <Clock size={9} className="flex-shrink-0" />
-                                {c.heureDebut} · {formatDuree(c.duree)}
+                                {formatPlage(c.heureDebut, c.duree)}
                               </p>
                             )}
                             {badge && height >= 52 && (
@@ -447,7 +454,7 @@ export default function PlanningPage() {
               >
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: colors(form.type).dot }} />
                 <span className="text-xs font-semibold">
-                  {JOURS_LABELS[form.jour]} · {TYPES[form.type] ?? form.type} · {form.heureDebut} · {formatDuree(form.duree)}
+                  {JOURS_LABELS[form.jour]} · {TYPES[form.type] ?? form.type} · {formatPlage(form.heureDebut, form.duree)}
                 </span>
               </div>
 
