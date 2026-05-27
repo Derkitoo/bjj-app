@@ -380,9 +380,8 @@ export default function PlanningPage() {
                         key={k}
                         type="button"
                         onClick={() => setForm((f) => ({ ...f, type: k }))}
-                        className="py-2 px-2 rounded-[8px] border-2 text-center text-xs font-semibold transition-all"
+                        className={`py-2 px-2 rounded-[8px] border-2 text-center text-xs font-semibold transition-all ${active ? "" : "border-[#e5e5e5] text-[#666666] hover:border-[#cccccc]"}`}
                         style={active ? { backgroundColor: s.bg, borderColor: s.border, color: s.text } : {}}
-                        {...(!active ? { className: "py-2 px-2 rounded-[8px] border-2 text-center text-xs font-semibold transition-all border-[#e5e5e5] text-[#666666] hover:border-[#cccccc]" } : {})}
                       >
                         <span className="w-1.5 h-1.5 rounded-full inline-block mr-1" style={{ backgroundColor: s.dot }} />
                         {v}
