@@ -13,8 +13,12 @@ export default auth((req) => {
 
   if (pathname.startsWith("/admin") && session?.user) {
     const role = (session.user as { role: string }).role;
-    if (role !== "ADMIN") {
+    if (role !== "ADMIN" && role !== "PROF") {
       return NextResponse.redirect(new URL("/login", req.url));
+    }
+    const profRestreint = ["/admin/paiements", "/admin/comptes", "/admin/ceintures", "/admin/dashboard"];
+    if (role === "PROF" && profRestreint.some((p) => pathname.startsWith(p))) {
+      return NextResponse.redirect(new URL("/admin/presence", req.url));
     }
   }
 

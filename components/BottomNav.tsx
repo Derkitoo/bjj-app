@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 interface BottomNavProps {
-  role: "ADMIN" | "ELEVE";
+  role: "ADMIN" | "PROF" | "ELEVE";
 }
 
 const adminLinks = [
@@ -23,6 +23,13 @@ const adminLinks = [
   { href: "/admin/presence", label: "Présence", icon: CheckSquare },
   { href: "/admin/planning", label: "Planning", icon: Calendar },
   { href: "/admin/ceintures", label: "Ceintures", icon: Award },
+];
+
+const profLinks = [
+  { href: "/admin/presence", label: "Présence", icon: CheckSquare },
+  { href: "/admin/planning", label: "Planning", icon: Calendar },
+  { href: "/admin/eleves", label: "Élèves", icon: Users },
+  { href: "/admin/actualites", label: "Actualités", icon: Newspaper },
 ];
 
 const eleveLinks = [
@@ -34,7 +41,7 @@ const eleveLinks = [
 
 export default function BottomNav({ role }: BottomNavProps) {
   const pathname = usePathname();
-  const links = role === "ADMIN" ? adminLinks : eleveLinks;
+  const links = role === "ADMIN" ? adminLinks : role === "PROF" ? profLinks : eleveLinks;
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 z-50"

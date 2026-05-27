@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { RefreshCw, ToggleLeft, ToggleRight, Copy, Check, Plus, KeyRound, X, Pencil, ShieldCheck } from "lucide-react";
+import {
+  RefreshCw, ToggleLeft, ToggleRight, Copy, Check, Plus,
+  KeyRound, X, Pencil, ShieldCheck, GraduationCap, Users,
+} from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -16,18 +19,34 @@ interface Compte {
   eleve: { nom: string; prenom: string; ceinture: string } | null;
 }
 
+type FiltreRole = "TOUS" | "ADMIN" | "PROF" | "ELEVE";
+type NouveauRole = "ADMIN" | "PROF";
+
+const ROLE_BADGE: Record<string, string> = {
+  ADMIN: "bg-purple-100 text-purple-800",
+  PROF:  "bg-orange-100 text-orange-700",
+  ELEVE: "bg-blue-100 text-blue-800",
+};
+const ROLE_LABEL: Record<string, string> = {
+  ADMIN: "Admin",
+  PROF:  "Professeur",
+  ELEVE: "Élève",
+};
+
 export default function ComptesPage() {
   const { data: session } = useSession();
   const currentUserId = (session?.user as { id?: string })?.id;
 
   const [comptes, setComptes] = useState<Compte[]>([]);
+  const [filtre, setFiltre] = useState<FiltreRole>("TOUS");
   const [mdpReset, setMdpReset] = useState<{ id: string; mdp: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const [showAdminModal, setShowAdminModal] = useState(false);
-  const [adminForm, setAdminForm] = useState({ email: "", password: "", confirm: "" });
-  const [adminError, setAdminError] = useState("");
-  const [adminLoading, setAdminLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [nouveauRole, setNouveauRole] = useState<NouveauRole>("PROF");
+  const [form, setForm] = useState({ email: "", password: "", confirm: "" });
+  const [formError, setFormError] = useState("");
+  const [formLoading, setFormLoading] = useState(false);
 
   const [showMdpModal, setShowMdpModal] = useState(false);
   const [mdpForm, setMdpForm] = useState({ ancienMdp: "", nouveauMdp: "", confirmer: "" });
@@ -38,9 +57,18 @@ export default function ComptesPage() {
   const [editEmail, setEditEmail] = useState<{ id: string; value: string } | null>(null);
   const [emailLoading, setEmailLoading] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/comptes").then((r) => r.json()).then(setComptes);
-  }, []);
+  const charger = () => fetch("/api/comptes").then((r) => r.json()).then(setComptes);
+
+  useEffect(() => { charger(); }, []);
+
+  const comptesFiltres = filtre === "TOUS" ? comptes : comptes.filter((c) => c.role === filtre);
+
+  const stats = {
+    admins: comptes.filter((c) => c.role === "ADMIN").length,
+    profs:  comptes.filter((c) => c.role === "PROF").length,
+    eleves: comptes.filter((c) => c.role === "ELEVE").length,
+    actifs: comptes.filter((c) => c.actif).length,
+  };
 
   const copier = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -68,29 +96,29 @@ export default function ComptesPage() {
     setComptes((prev) => prev.map((c) => c.id === id ? { ...c, actif: !c.actif } : c));
   };
 
-  const creerAdmin = async (e: React.FormEvent) => {
+  const creerCompte = async (e: React.FormEvent) => {
     e.preventDefault();
-    setAdminError("");
-    if (adminForm.password !== adminForm.confirm) {
-      setAdminError("Les mots de passe ne correspondent pas");
+    setFormError("");
+    if (form.password !== form.confirm) {
+      setFormError("Les mots de passe ne correspondent pas");
       return;
     }
-    if (adminForm.password.length < 8) {
-      setAdminError("Mot de passe trop court (8 caractères minimum)");
+    if (form.password.length < 8) {
+      setFormError("Mot de passe trop court (8 caractères minimum)");
       return;
     }
-    setAdminLoading(true);
+    setFormLoading(true);
     const res = await fetch("/api/comptes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: adminForm.email, password: adminForm.password, role: "ADMIN" }),
+      body: JSON.stringify({ email: form.email, password: form.password, role: nouveauRole }),
     });
     const data = await res.json();
-    setAdminLoading(false);
-    if (!res.ok) { setAdminError(data.error); return; }
-    setShowAdminModal(false);
-    setAdminForm({ email: "", password: "", confirm: "" });
-    fetch("/api/comptes").then((r) => r.json()).then(setComptes);
+    setFormLoading(false);
+    if (!res.ok) { setFormError(data.error); return; }
+    setShowModal(false);
+    setForm({ email: "", password: "", confirm: "" });
+    charger();
   };
 
   const changerMonMdp = async (e: React.FormEvent) => {
@@ -114,7 +142,11 @@ export default function ComptesPage() {
     setMdpLoading(false);
     if (!res.ok) { setMdpError(data.error); return; }
     setMdpOk(true);
-    setTimeout(() => { setShowMdpModal(false); setMdpOk(false); setMdpForm({ ancienMdp: "", nouveauMdp: "", confirmer: "" }); }, 1800);
+    setTimeout(() => {
+      setShowMdpModal(false);
+      setMdpOk(false);
+      setMdpForm({ ancienMdp: "", nouveauMdp: "", confirmer: "" });
+    }, 1800);
   };
 
   const sauvegarderEmail = async (id: string) => {
@@ -135,7 +167,7 @@ export default function ComptesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#1a1a1a]">Gestion des comptes</h1>
+        <h1 className="text-2xl font-bold text-[#1a1a1a]">Comptes</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowMdpModal(true)}
@@ -145,12 +177,52 @@ export default function ComptesPage() {
             Mon mot de passe
           </button>
           <button
-            onClick={() => setShowAdminModal(true)}
+            onClick={() => { setNouveauRole("PROF"); setShowModal(true); }}
             className="flex items-center gap-2 bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2 text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
           >
             <Plus size={15} />
-            Compte admin
+            Nouveau compte
           </button>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <div className="bg-white rounded-[12px] shadow-sm p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+            <ShieldCheck size={16} className="text-purple-700" />
+          </div>
+          <div>
+            <p className="text-xl font-black text-[#1a1a1a]">{stats.admins}</p>
+            <p className="text-xs text-[#999999]">Admins</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-[12px] shadow-sm p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+            <GraduationCap size={16} className="text-orange-600" />
+          </div>
+          <div>
+            <p className="text-xl font-black text-[#1a1a1a]">{stats.profs}</p>
+            <p className="text-xs text-[#999999]">Professeurs</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-[12px] shadow-sm p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <Users size={16} className="text-blue-600" />
+          </div>
+          <div>
+            <p className="text-xl font-black text-[#1a1a1a]">{stats.eleves}</p>
+            <p className="text-xs text-[#999999]">Élèves</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-[12px] shadow-sm p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <span className="text-sm font-black text-green-700">{stats.actifs}</span>
+          </div>
+          <div>
+            <p className="text-xl font-black text-[#1a1a1a]">{stats.actifs}</p>
+            <p className="text-xs text-[#999999]">Actifs</p>
+          </div>
         </div>
       </div>
 
@@ -168,6 +240,26 @@ export default function ComptesPage() {
         </div>
       )}
 
+      {/* Filtre par rôle */}
+      <div className="flex items-center gap-2 mb-4">
+        {(["TOUS", "ADMIN", "PROF", "ELEVE"] as FiltreRole[]).map((r) => (
+          <button
+            key={r}
+            onClick={() => setFiltre(r)}
+            className={`px-3 py-1.5 rounded-[8px] text-xs font-medium transition-colors ${
+              filtre === r
+                ? "bg-[var(--color-primary)] text-white"
+                : "border border-[#e5e5e5] text-[#666666] hover:bg-[#f9f9f9]"
+            }`}
+          >
+            {r === "TOUS" ? "Tous" : ROLE_LABEL[r]}
+            <span className="ml-1.5 opacity-60">
+              {r === "TOUS" ? comptes.length : comptes.filter((c) => c.role === r).length}
+            </span>
+          </button>
+        ))}
+      </div>
+
       <div className="bg-white rounded-[12px] shadow-sm overflow-hidden">
         <table className="w-full">
           <thead>
@@ -180,14 +272,18 @@ export default function ComptesPage() {
             </tr>
           </thead>
           <tbody>
-            {comptes.map((c, i) => {
+            {comptesFiltres.map((c, i) => {
               const isSelf = c.id === currentUserId;
               return (
                 <tr key={c.id} className={`border-b border-[#e5e5e5] ${i % 2 === 0 ? "" : "bg-[#f9f9f9]"}`}>
                   <td className="px-4 py-3">
                     <p className="text-sm font-medium text-[#1a1a1a]">
-                      {c.eleve ? `${c.eleve.prenom} ${c.eleve.nom}` : "Administrateur"}
-                      {isSelf && <span className="ml-1.5 text-[10px] bg-[var(--color-primary-subtle)] text-[var(--color-primary)] px-1.5 py-0.5 rounded-full font-semibold">Vous</span>}
+                      {c.eleve ? `${c.eleve.prenom} ${c.eleve.nom}` : c.role === "PROF" ? "Professeur" : "Administrateur"}
+                      {isSelf && (
+                        <span className="ml-1.5 text-[10px] bg-[var(--color-primary-subtle)] text-[var(--color-primary)] px-1.5 py-0.5 rounded-full font-semibold">
+                          Vous
+                        </span>
+                      )}
                     </p>
                     {editEmail?.id === c.id ? (
                       <div className="flex items-center gap-1.5 mt-1">
@@ -221,8 +317,8 @@ export default function ComptesPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.role === "ADMIN" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}`}>
-                      {c.role === "ADMIN" ? "Admin" : "Élève"}
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_BADGE[c.role] ?? "bg-gray-100 text-gray-600"}`}>
+                      {ROLE_LABEL[c.role] ?? c.role}
                     </span>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell text-sm text-[#666666]">
@@ -266,7 +362,7 @@ export default function ComptesPage() {
                 </tr>
               );
             })}
-            {comptes.length === 0 && (
+            {comptesFiltres.length === 0 && (
               <tr>
                 <td colSpan={5} className="text-center text-[#666666] text-sm py-8">Aucun compte trouvé</td>
               </tr>
@@ -275,24 +371,57 @@ export default function ComptesPage() {
         </table>
       </div>
 
-      {showAdminModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowAdminModal(false)}>
+      {/* Modal création compte ADMIN / PROF */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-[12px] p-6 w-full max-w-sm mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <ShieldCheck size={18} className="text-purple-600" />
-                <h2 className="font-bold text-[#1a1a1a]">Créer un compte admin</h2>
-              </div>
-              <button onClick={() => setShowAdminModal(false)} className="text-[#666666] hover:text-[#1a1a1a]"><X size={18} /></button>
+              <h2 className="font-bold text-[#1a1a1a]">Nouveau compte</h2>
+              <button onClick={() => setShowModal(false)} className="text-[#666666] hover:text-[#1a1a1a]"><X size={18} /></button>
             </div>
-            <form onSubmit={creerAdmin} className="space-y-3">
+
+            {/* Sélecteur de rôle */}
+            <div className="flex gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => setNouveauRole("PROF")}
+                className={`flex-1 flex items-center justify-center gap-2 rounded-[8px] px-3 py-2.5 text-sm font-medium border transition-colors ${
+                  nouveauRole === "PROF"
+                    ? "bg-orange-50 border-orange-300 text-orange-700"
+                    : "border-[#e5e5e5] text-[#666666] hover:bg-[#f9f9f9]"
+                }`}
+              >
+                <GraduationCap size={15} />
+                Professeur
+              </button>
+              <button
+                type="button"
+                onClick={() => setNouveauRole("ADMIN")}
+                className={`flex-1 flex items-center justify-center gap-2 rounded-[8px] px-3 py-2.5 text-sm font-medium border transition-colors ${
+                  nouveauRole === "ADMIN"
+                    ? "bg-purple-50 border-purple-300 text-purple-700"
+                    : "border-[#e5e5e5] text-[#666666] hover:bg-[#f9f9f9]"
+                }`}
+              >
+                <ShieldCheck size={15} />
+                Admin
+              </button>
+            </div>
+
+            <p className="text-xs text-[#999999] mb-4">
+              {nouveauRole === "PROF"
+                ? "Accès : présence, planning, élèves, actualités"
+                : "Accès complet à toutes les sections"}
+            </p>
+
+            <form onSubmit={creerCompte} className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-[#666666] mb-1">Email</label>
                 <input
                   type="email"
                   required
-                  value={adminForm.email}
-                  onChange={(e) => setAdminForm((f) => ({ ...f, email: e.target.value }))}
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                   className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]"
                 />
               </div>
@@ -301,8 +430,8 @@ export default function ComptesPage() {
                 <input
                   type="password"
                   required
-                  value={adminForm.password}
-                  onChange={(e) => setAdminForm((f) => ({ ...f, password: e.target.value }))}
+                  value={form.password}
+                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                   className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]"
                 />
                 <p className="text-xs text-[#999999] mt-1">8 caractères minimum</p>
@@ -312,24 +441,25 @@ export default function ComptesPage() {
                 <input
                   type="password"
                   required
-                  value={adminForm.confirm}
-                  onChange={(e) => setAdminForm((f) => ({ ...f, confirm: e.target.value }))}
+                  value={form.confirm}
+                  onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
                   className="w-full border border-[#e5e5e5] rounded-[8px] px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]"
                 />
               </div>
-              {adminError && <p className="text-sm text-red-500">{adminError}</p>}
+              {formError && <p className="text-sm text-red-500">{formError}</p>}
               <button
                 type="submit"
-                disabled={adminLoading}
+                disabled={formLoading}
                 className="w-full bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-dark)] disabled:opacity-50 transition-colors"
               >
-                {adminLoading ? "Création…" : "Créer le compte"}
+                {formLoading ? "Création…" : `Créer le compte ${nouveauRole === "PROF" ? "professeur" : "admin"}`}
               </button>
             </form>
           </div>
         </div>
       )}
 
+      {/* Modal changement mot de passe */}
       {showMdpModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowMdpModal(false)}>
           <div className="bg-white rounded-[12px] p-6 w-full max-w-sm mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>

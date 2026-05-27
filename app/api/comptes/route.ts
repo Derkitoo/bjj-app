@@ -31,14 +31,14 @@ export async function POST(req: NextRequest) {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return NextResponse.json({ error: "Cet email est déjà utilisé" }, { status: 400 });
 
-  if (role === "ADMIN") {
+  if (role === "ADMIN" || role === "PROF") {
     const { password } = body;
     if (!password || password.length < 8) {
       return NextResponse.json({ error: "Mot de passe requis (8 caractères minimum)" }, { status: 400 });
     }
     const hash = await hasherMotDePasse(password);
     const user = await prisma.user.create({
-      data: { email, password: hash, role: "ADMIN", motDePasseTemporaire: false },
+      data: { email, password: hash, role, motDePasseTemporaire: false },
     });
     return NextResponse.json({ userId: user.id }, { status: 201 });
   }

@@ -12,7 +12,7 @@ import {
 import { THEMES, applyTheme, applyDarkMode, type ThemeKey } from "@/lib/themes";
 
 interface SidebarProps {
-  role: "ADMIN" | "ELEVE";
+  role: "ADMIN" | "PROF" | "ELEVE";
 }
 
 const adminLinks = [
@@ -26,6 +26,13 @@ const adminLinks = [
   { href: "/admin/comptes",    label: "Comptes",          icon: UserCog },
 ];
 
+const profLinks = [
+  { href: "/admin/presence",   label: "Présence",   icon: CheckSquare },
+  { href: "/admin/planning",   label: "Planning",   icon: Calendar },
+  { href: "/admin/eleves",     label: "Élèves",     icon: Users },
+  { href: "/admin/actualites", label: "Actualités", icon: Newspaper },
+];
+
 const eleveLinks = [
   { href: "/eleve/accueil",    label: "Accueil",     icon: Home },
   { href: "/eleve/planning",   label: "Planning",    icon: Calendar },
@@ -35,7 +42,7 @@ const eleveLinks = [
 
 export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
-  const links = role === "ADMIN" ? adminLinks : eleveLinks;
+  const links = role === "ADMIN" ? adminLinks : role === "PROF" ? profLinks : eleveLinks;
   const [theme, setTheme] = useState<ThemeKey>("rouge");
   const [dark, setDark] = useState(false);
   const [showThemes, setShowThemes] = useState(false);
@@ -103,7 +110,7 @@ export default function Sidebar({ role }: SidebarProps) {
         </button>
 
         {/* Theme selector */}
-        {role === "ADMIN" && (
+        {(role === "ADMIN" || role === "PROF") && (
           <div>
             <button
               onClick={() => setShowThemes((v) => !v)}
