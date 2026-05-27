@@ -156,9 +156,23 @@ export default function ElevesList({ eleves, initialCeinture, initialStatut }: P
                     : "—"}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${eleve.actif ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                    {eleve.actif ? "Actif" : "Inactif"}
-                  </span>
+                  <div className="flex flex-col gap-1">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium w-fit ${eleve.actif ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                      {eleve.actif ? "Actif" : "Inactif"}
+                    </span>
+                    {eleve.actif && (() => {
+                      const last = eleve.presences[0]?.date;
+                      const days = last ? Math.floor((Date.now() - new Date(last).getTime()) / 86400000) : null;
+                      if (days === null || days > 30) {
+                        return (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-orange-100 text-orange-600 w-fit">
+                            {days === null ? "Jamais venu" : `Absent ${days}j`}
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
                 </td>
               </tr>
             ))}
