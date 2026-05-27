@@ -22,6 +22,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   }
 
   const { id } = await params;
+  await prisma.presence.deleteMany({ where: { coursId: id } });
   await prisma.cours.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }
