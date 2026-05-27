@@ -16,9 +16,17 @@ export default auth((req) => {
     if (role !== "ADMIN" && role !== "PROF") {
       return NextResponse.redirect(new URL("/login", req.url));
     }
-    const profRestreint = ["/admin/paiements", "/admin/comptes", "/admin/ceintures", "/admin/dashboard"];
-    if (role === "PROF" && profRestreint.some((p) => pathname.startsWith(p))) {
-      return NextResponse.redirect(new URL("/admin/presence", req.url));
+    if (role !== "ADMIN") {
+      const permissionsRaw = (session.user as { permissions?: string }).permissions ?? "[]";
+      let permissions: string[] = [];
+      try { permissions = JSON.parse(permissionsRaw); } catch { permissions = []; }
+
+      const SECTIONS = ["dashboard", "eleves", "presence", "planning", "ceintures", "actualites", "paiements", "comptes"];
+      const section = SECTIONS.find((s) => pathname.startsWith(`/admin/${s}`));
+      if (section && !permissions.includes(section)) {
+        const first = permissions[0];
+        return NextResponse.redirect(new URL(first ? `/admin/${first}` : "/login", req.url));
+      }
     }
   }
 

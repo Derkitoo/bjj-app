@@ -51,6 +51,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ success: true });
   }
 
+  if (action === "changePermissions") {
+    if (id === currentUserId) {
+      return NextResponse.json({ error: "Impossible de modifier ses propres permissions" }, { status: 400 });
+    }
+    const { permissions } = body;
+    if (!Array.isArray(permissions)) {
+      return NextResponse.json({ error: "permissions doit être un tableau" }, { status: 400 });
+    }
+    await prisma.user.update({ where: { id }, data: { permissions: JSON.stringify(permissions) } });
+    return NextResponse.json({ success: true });
+  }
+
   if (action === "changeRole") {
     if (id === currentUserId) {
       return NextResponse.json({ error: "Impossible de changer son propre rôle" }, { status: 400 });

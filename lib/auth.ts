@@ -14,6 +14,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = (user as { role: string }).role;
         token.eleveId = (user as { eleveId: string | null }).eleveId;
         token.motDePasseTemporaire = (user as { motDePasseTemporaire: boolean }).motDePasseTemporaire;
+        token.permissions = (user as { permissions: string }).permissions;
       }
       return token;
     },
@@ -23,6 +24,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         (session.user as unknown as { eleveId: string | null }).eleveId = token.eleveId as string | null;
         (session.user as unknown as { id: string }).id = token.sub as string;
         (session.user as unknown as { motDePasseTemporaire: boolean }).motDePasseTemporaire = token.motDePasseTemporaire as boolean;
+        (session.user as unknown as { permissions: string }).permissions = (token.permissions as string) ?? "[]";
       }
       return session;
     },
@@ -56,6 +58,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           role: user.role,
           eleveId: user.eleveId,
           motDePasseTemporaire: user.motDePasseTemporaire,
+          permissions: user.permissions,
         };
       },
     }),
