@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Pencil, FileText, TrendingUp, Calendar, Award } from "lucide-react";
+import { ArrowLeft, Pencil, FileText, TrendingUp, Calendar, Award, ClipboardList, Plus, Check } from "lucide-react";
 import CeintureBadge from "@/components/CeintureBadge";
 import { format, differenceInYears } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -19,6 +19,7 @@ export default async function EleveDetailPage({ params }: { params: Promise<{ id
         presences: { orderBy: { date: "desc" }, take: 20, include: { cours: true } },
         promotions: { orderBy: { date: "desc" } },
         user: { select: { email: true, actif: true, motDePasseTemporaire: true, createdAt: true } },
+        examens: { orderBy: { createdAt: "desc" }, include: { techniques: true } },
         _count: { select: { presences: true } },
       },
     }),
@@ -295,6 +296,82 @@ export default async function EleveDetailPage({ params }: { params: Promise<{ id
           </ul>
         </div>
       </div>
+
+      {/* ── Examens ── */}
+      <div className="mt-4 bg-white rounded-[12px] shadow-sm p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-[#1a1a1a] flex items-center gap-2">
+            <ClipboardList size={16} className="text-[#cc0000]" />
+            Examens
+          </h2>
+          <Link
+            href={`/admin/eleves/${id}/examen/nouveau`}
+            className="flex items-center gap-1.5 text-xs bg-[#cc0000] text-white rounded-[8px] px-3 py-1.5 font-medium hover:bg-[#aa0000] transition-colors"
+          >
+            <Plus size={13} />
+            Créer un examen
+          </Link>
+        </div>
+
+        {eleve.examens.length === 0 ? (
+          <p className="text-sm text-[#999999]">Aucun examen pour cet élève.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {eleve.examens.map((ex) => {
+              const CEINTURE_LABEL: Record<string, string> = {
+                BLEUE: "🔵 Bleue", VIOLETTE: "🟣 Violette", MARRON: "🟤 Marron", NOIRE: "⚫ Noire",
+              };
+              const STATUT_STYLE: Record<string, string> = {
+                EN_ATTENTE: "bg-orange-100 text-orange-700",
+                REUSSI:     "bg-green-100 text-green-700",
+                ECHOUE:     "bg-red-100 text-red-700",
+              };
+              const STATUT_LABEL: Record<string, string> = {
+                EN_ATTENTE: "En attente", REUSSI: "Réussi", ECHOUE: "Échoué",
+              };
+              const nbMaitrises = ex.techniques.filter((t) => t.statut === "MAITRISE").length;
+              return (
+                <Link
+                  key={ex.id}
+                  href={`/admin/eleves/${id}/examen/${ex.id}`}
+                  className="block border border-[#e5e5e5] rounded-[10px] p-4 hover:border-[#cc0000] hover:shadow-sm transition-all"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="text-sm font-semibold text-[#1a1a1a]">
+                      {CEINTURE_LABEL[ex.ceintureCible] ?? ex.ceintureCible}
+                    </p>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUT_STYLE[ex.statut] ?? "bg-gray-100 text-gray-500"}`}>
+                      {STATUT_LABEL[ex.statut] ?? ex.statut}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-[#999999]">
+                    {ex.techniques.length > 0 && (
+                      <>
+                        <span className="flex items-center gap-1">
+                          <Check size={11} className="text-green-500" />
+                          {nbMaitrises}/{ex.techniques.length}
+                        </span>
+                        <div className="flex-1 h-1.5 bg-[#f0f0f0] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-green-400 rounded-full"
+                            style={{ width: `${(nbMaitrises / ex.techniques.length) * 100}%` }}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {ex.date && (
+                    <p className="text-xs text-[#aaaaaa] mt-1.5">
+                      {format(new Date(ex.date), "d MMM yyyy", { locale: fr })}
+                    </p>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+

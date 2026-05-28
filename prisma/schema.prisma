@@ -54,6 +54,7 @@ model Eleve {
   presences       Presence[]
   promotions      Promotion[]
   paiements       Paiement[]
+  examens         Examen[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }
@@ -142,6 +143,29 @@ model Cotisation {
   createdAt               DateTime   @default(now())
 
   @@unique([eleveId, saison])
+}
+
+model Examen {
+  id            String            @id @default(cuid())
+  eleveId       String
+  eleve         Eleve             @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+  ceintureCible String
+  date          DateTime?
+  statut        String            @default("EN_ATTENTE")
+  notesProf     String?
+  techniques    ExamenTechnique[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model ExamenTechnique {
+  id          String  @id @default(cuid())
+  examenId    String
+  examen      Examen  @relation(fields: [examenId], references: [id], onDelete: Cascade)
+  nom         String
+  statut      String  @default("NON_EVALUE")
+  commentaire String?
+  ordre       Int     @default(0)
 }
 
 model Echeance {

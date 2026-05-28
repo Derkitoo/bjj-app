@@ -13,6 +13,7 @@ import {
   User,
   CreditCard,
   UserCog,
+  ClipboardList,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 
@@ -35,6 +36,7 @@ const eleveLinks = [
   { key: "accueil",    href: "/eleve/accueil",    label: "Accueil",    icon: Home },
   { key: "planning",   href: "/eleve/planning",   label: "Planning",   icon: Calendar },
   { key: "actualites", href: "/eleve/actualites", label: "Actualités", icon: Newspaper },
+  { key: "examens",    href: "/eleve/examens",    label: "Examens",    icon: ClipboardList },
   { key: "profil",     href: "/eleve/profil",     label: "Profil",     icon: User },
 ];
 
