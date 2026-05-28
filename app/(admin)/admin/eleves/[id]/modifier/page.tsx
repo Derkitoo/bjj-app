@@ -30,6 +30,7 @@ export default function ModifierElevePage() {
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
   const [confirmSuppr, setConfirmSuppr] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     fetch(`/api/eleves/${id}`)
@@ -90,6 +91,11 @@ export default function ModifierElevePage() {
 
   const archiver = async () => {
     await fetch(`/api/eleves/${id}`, { method: "DELETE" });
+    router.push("/admin/eleves");
+  };
+
+  const supprimerDefinitivement = async () => {
+    await fetch(`/api/eleves/${id}?hard=true`, { method: "DELETE" });
     router.push("/admin/eleves");
   };
 
@@ -296,25 +302,51 @@ export default function ModifierElevePage() {
               Annuler
             </Link>
           </div>
-          {!confirmSuppr ? (
-            <button type="button" onClick={() => setConfirmSuppr(true)}
-              className="flex items-center gap-2 text-sm text-[#666666] hover:text-[#ef4444] transition-colors">
-              <Trash2 size={15} />
-              Désactiver l&apos;élève
-            </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-[#ef4444]">Confirmer ?</span>
-              <button type="button" onClick={archiver}
-                className="bg-[#ef4444] text-white rounded-[8px] px-3 py-1.5 text-sm font-medium hover:bg-[#dc2626] transition-colors">
-                Oui, désactiver
-              </button>
-              <button type="button" onClick={() => setConfirmSuppr(false)}
-                className="text-sm text-[#666666] hover:text-[#1a1a1a]">
-                Annuler
-              </button>
-            </div>
-          )}
+          <div className="flex flex-col items-end gap-2">
+            {!confirmSuppr && !confirmDelete && (
+              <>
+                <button type="button" onClick={() => setConfirmSuppr(true)}
+                  className="flex items-center gap-2 text-sm text-[#666666] hover:text-[#ef4444] transition-colors">
+                  <Trash2 size={15} />
+                  Désactiver l&apos;élève
+                </button>
+                <button type="button" onClick={() => setConfirmDelete(true)}
+                  className="flex items-center gap-2 text-sm text-[#aaaaaa] hover:text-[#ef4444] transition-colors">
+                  <Trash2 size={13} />
+                  Supprimer définitivement
+                </button>
+              </>
+            )}
+            {confirmSuppr && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[#ef4444]">Désactiver ?</span>
+                <button type="button" onClick={archiver}
+                  className="bg-[#ef4444] text-white rounded-[8px] px-3 py-1.5 text-sm font-medium hover:bg-[#dc2626] transition-colors">
+                  Oui, désactiver
+                </button>
+                <button type="button" onClick={() => setConfirmSuppr(false)}
+                  className="text-sm text-[#666666] hover:text-[#1a1a1a]">
+                  Annuler
+                </button>
+              </div>
+            )}
+            {confirmDelete && (
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-sm font-semibold text-[#ef4444]">⚠️ Suppression définitive — irréversible</span>
+                <p className="text-xs text-[#999999]">Toutes les données (présences, cotisations, historique) seront effacées.</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <button type="button" onClick={supprimerDefinitivement}
+                    className="bg-[#ef4444] text-white rounded-[8px] px-3 py-1.5 text-sm font-medium hover:bg-[#dc2626] transition-colors">
+                    Oui, supprimer
+                  </button>
+                  <button type="button" onClick={() => setConfirmDelete(false)}
+                    className="text-sm text-[#666666] hover:text-[#1a1a1a]">
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </form>
     </div>
