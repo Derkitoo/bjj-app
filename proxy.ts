@@ -21,7 +21,7 @@ export default auth((req) => {
       let permissions: string[] = [];
       try { permissions = JSON.parse(permissionsRaw); } catch { permissions = []; }
 
-      const SECTIONS = ["dashboard", "eleves", "presence", "planning", "ceintures", "actualites", "paiements", "comptes"];
+      const SECTIONS = ["dashboard", "eleves", "presence", "planning", "cours", "ceintures", "actualites", "paiements", "comptes"];
       const section = SECTIONS.find((s) => pathname.startsWith(`/admin/${s}`));
       if (section && !permissions.includes(section)) {
         const first = permissions[0];

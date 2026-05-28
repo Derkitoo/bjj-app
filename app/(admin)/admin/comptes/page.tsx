@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import {
   RefreshCw, ToggleLeft, ToggleRight, Copy, Check, Plus,
   KeyRound, X, Pencil, ShieldCheck, GraduationCap, Users, Settings,
-  LayoutDashboard, CheckSquare, Calendar, Award, Newspaper, CreditCard, UserCog,
+  LayoutDashboard, CheckSquare, Calendar, Award, Newspaper, CreditCard, UserCog, BookOpen,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -40,6 +40,7 @@ const SECTIONS = [
   { key: "eleves",     label: "Élèves",           icon: Users },
   { key: "presence",   label: "Présence",         icon: CheckSquare },
   { key: "planning",   label: "Planning",         icon: Calendar },
+  { key: "cours",      label: "Cours",            icon: BookOpen },
   { key: "ceintures",  label: "Ceintures",        icon: Award },
   { key: "actualites", label: "Actualités",       icon: Newspaper },
   { key: "paiements",  label: "Paiements",        icon: CreditCard },

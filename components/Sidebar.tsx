@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Users, CheckSquare, Calendar, Award,
   Newspaper, LogOut, Home, User, UserCog, CreditCard,
-  Palette, Sun, Moon, ClipboardList,
+  Palette, Sun, Moon, ClipboardList, BookOpen,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { THEMES, applyTheme, applyDarkMode, type ThemeKey } from "@/lib/themes";
@@ -21,6 +21,7 @@ const ALL_ADMIN_LINKS = [
   { key: "eleves",     href: "/admin/eleves",     label: "Élèves",           icon: Users },
   { key: "presence",   href: "/admin/presence",   label: "Présence",         icon: CheckSquare },
   { key: "planning",   href: "/admin/planning",   label: "Planning",         icon: Calendar },
+  { key: "cours",      href: "/admin/cours",      label: "Cours",            icon: BookOpen },
   { key: "ceintures",  href: "/admin/ceintures",  label: "Ceintures",        icon: Award },
   { key: "actualites", href: "/admin/actualites", label: "Actualités",       icon: Newspaper },
   { key: "paiements",  href: "/admin/paiements",  label: "Paiements",        icon: CreditCard },
@@ -28,11 +29,12 @@ const ALL_ADMIN_LINKS = [
 ];
 
 const eleveLinks = [
-  { key: "accueil",    href: "/eleve/accueil",    label: "Accueil",     icon: Home },
-  { key: "planning",   href: "/eleve/planning",   label: "Planning",    icon: Calendar },
-  { key: "actualites", href: "/eleve/actualites", label: "Actualités",  icon: Newspaper },
-  { key: "examens",    href: "/eleve/examens",    label: "Mes examens", icon: ClipboardList },
-  { key: "profil",     href: "/eleve/profil",     label: "Mon profil",  icon: User },
+  { key: "accueil",    href: "/eleve/accueil",    label: "Accueil",        icon: Home },
+  { key: "planning",   href: "/eleve/planning",   label: "Planning",       icon: Calendar },
+  { key: "cours",      href: "/eleve/cours",      label: "Techniques",     icon: BookOpen },
+  { key: "actualites", href: "/eleve/actualites", label: "Actualités",     icon: Newspaper },
+  { key: "examens",    href: "/eleve/examens",    label: "Mes examens",    icon: ClipboardList },
+  { key: "profil",     href: "/eleve/profil",     label: "Mon profil",     icon: User },
 ];
 
 export default function Sidebar({ role }: SidebarProps) {

@@ -14,6 +14,7 @@ import {
   CreditCard,
   UserCog,
   ClipboardList,
+  BookOpen,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 
@@ -26,6 +27,7 @@ const ALL_ADMIN_LINKS = [
   { key: "eleves",     href: "/admin/eleves",     label: "Élèves",     icon: Users },
   { key: "presence",   href: "/admin/presence",   label: "Présence",   icon: CheckSquare },
   { key: "planning",   href: "/admin/planning",   label: "Planning",   icon: Calendar },
+  { key: "cours",      href: "/admin/cours",      label: "Cours",      icon: BookOpen },
   { key: "ceintures",  href: "/admin/ceintures",  label: "Ceintures",  icon: Award },
   { key: "actualites", href: "/admin/actualites", label: "Actualités", icon: Newspaper },
   { key: "paiements",  href: "/admin/paiements",  label: "Paiements",  icon: CreditCard },
@@ -35,7 +37,7 @@ const ALL_ADMIN_LINKS = [
 const eleveLinks = [
   { key: "accueil",    href: "/eleve/accueil",    label: "Accueil",    icon: Home },
   { key: "planning",   href: "/eleve/planning",   label: "Planning",   icon: Calendar },
-  { key: "actualites", href: "/eleve/actualites", label: "Actualités", icon: Newspaper },
+  { key: "cours",      href: "/eleve/cours",      label: "Techniques", icon: BookOpen },
   { key: "examens",    href: "/eleve/examens",    label: "Examens",    icon: ClipboardList },
   { key: "profil",     href: "/eleve/profil",     label: "Profil",     icon: User },
 ];
