@@ -116,6 +116,7 @@ export default function PaiementsPage() {
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Cotisation | null>(null);
   const [modeEch, setModeEch] = useState<Record<string, string>>({});
+  const [changingMode, setChangingMode] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [createMode, setCreateMode] = useState<"bulk" | "individuel">("bulk");
   const [allEleves, setAllEleves] = useState<EleveSimple[]>([]);
@@ -203,6 +204,21 @@ export default function PaiementsPage() {
     await fetch(`/api/cotisations/${id}`, { method: "DELETE" });
     setCotisations((prev) => prev.filter((c) => c.id !== id));
     if (selected?.id === id) setSelected(null);
+  };
+
+  const changerMode = async (cotId: string, nb: number) => {
+    setChangingMode(true);
+    const res = await fetch(`/api/cotisations/${cotId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ changeMode: nb }),
+    });
+    if (res.ok) {
+      const updated: Cotisation = await res.json();
+      setCotisations((prev) => prev.map((c) => (c.id === cotId ? { ...c, ...updated } : c)));
+      setSelected(updated);
+    }
+    setChangingMode(false);
   };
 
   const creerBulk = async () => {
@@ -540,6 +556,39 @@ export default function PaiementsPage() {
                   <span className="text-[#1a1a1a]">{selected.montantTotal.toFixed(2)} €</span>
                 </div>
               </div>
+            </div>
+
+            <div className="px-5 pb-3">
+              <p className="text-xs font-semibold text-[#999999] uppercase tracking-wider mb-2">Mode de paiement</p>
+              <div className="grid grid-cols-2 gap-2">
+                {[{ v: 1, label: "1× — Paiement unique" }, { v: 3, label: "3× — En 3 fois" }].map(({ v, label }) => {
+                  const hasPaid = selected.echeances.some((e) => e.statut === "PAYE");
+                  const isActive = selected.nbEcheances === v;
+                  return (
+                    <button
+                      key={v}
+                      disabled={isActive || changingMode || hasPaid}
+                      onClick={() => changerMode(selected.id, v)}
+                      title={hasPaid ? "Impossible : des échéances sont déjà payées" : undefined}
+                      className={`py-2 px-3 rounded-[8px] text-sm font-medium border-2 transition-colors disabled:cursor-not-allowed ${
+                        isActive
+                          ? "border-[var(--color-primary)] bg-[var(--color-primary-subtle)] text-[var(--color-primary)]"
+                          : hasPaid
+                          ? "border-[#e5e5e5] text-[#cccccc] bg-[#fafafa]"
+                          : "border-[#e5e5e5] text-[#666666] hover:border-[#aaaaaa] bg-white"
+                      }`}
+                    >
+                      {changingMode && !isActive ? "..." : label}
+                    </button>
+                  );
+                })}
+              </div>
+              {selected.echeances.some((e) => e.statut === "PAYE") && (
+                <p className="text-xs text-[#aaaaaa] mt-1.5">Mode non modifiable : des échéances sont déjà payées.</p>
+              )}
+              {selected.nbEcheances === 3 && (
+                <p className="text-xs text-[#999999] mt-1.5">Échéances : Sept · Jan · Avr</p>
+              )}
             </div>
 
             <div className="px-5 pb-2">
