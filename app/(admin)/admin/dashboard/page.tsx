@@ -226,7 +226,7 @@ export default function DashboardPage() {
           className="flex items-center gap-2 text-sm rounded-[8px] px-3 py-2 transition-colors"
           style={{ border: "1px solid var(--c-border)", color: "var(--c-text-2)", backgroundColor: "var(--c-card)" }}>
           <Settings size={15} />
-          Personnaliser
+          <span className="hidden sm:inline">Personnaliser</span>
         </button>
       </div>
 

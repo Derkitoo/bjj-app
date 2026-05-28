@@ -322,13 +322,138 @@ export default function ComptesPage() {
         ))}
       </div>
 
-      <div className="bg-white rounded-[12px] shadow-sm overflow-hidden">
+      {/* ── Mobile : cartes ── */}
+      <div className="md:hidden space-y-3">
+        {comptesFiltres.map((c) => {
+          const isSelf = c.id === currentUserId;
+          const perms = permState[c.id] ?? [];
+          const isPanelOpen = permPanel === c.id;
+          return (
+            <div key={c.id} className="bg-white rounded-[12px] shadow-sm overflow-hidden">
+              <div className="p-4">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-[#1a1a1a]">
+                        {c.eleve ? `${c.eleve.prenom} ${c.eleve.nom}` : c.role === "PROF" ? "Professeur" : "Administrateur"}
+                      </p>
+                      {isSelf && (
+                        <span className="text-[10px] bg-[var(--color-primary-subtle)] text-[var(--color-primary)] px-1.5 py-0.5 rounded-full font-semibold">Vous</span>
+                      )}
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.actif ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                        {c.actif ? "Actif" : "Inactif"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#666666] mt-1 truncate">{c.email}</p>
+                    {c.motDePasseTemporaire && (
+                      <p className="text-[10px] text-orange-600 font-medium mt-0.5">⚠ Mot de passe temporaire</p>
+                    )}
+                  </div>
+                  {isSelf ? (
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${ROLE_BADGE[c.role] ?? "bg-gray-100 text-gray-600"}`}>
+                      {ROLE_LABEL[c.role] ?? c.role}
+                    </span>
+                  ) : (
+                    <select
+                      value={c.role}
+                      disabled={roleLoading === c.id}
+                      onChange={(e) => changerRole(c.id, e.target.value)}
+                      className={`text-xs rounded-[6px] px-2 py-1 font-medium border-0 cursor-pointer focus:outline-none flex-shrink-0 ${ROLE_BADGE[c.role] ?? "bg-gray-100 text-gray-600"}`}
+                    >
+                      <option value="ADMIN">Admin</option>
+                      <option value="PROF">Professeur</option>
+                      <option value="ELEVE">Élève</option>
+                    </select>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 pt-2 border-t border-[#f5f5f5]">
+                  {!isSelf && c.role !== "ELEVE" && (
+                    <button
+                      onClick={() => setPermPanel(isPanelOpen ? null : c.id)}
+                      className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-[6px] border transition-colors ${
+                        isPanelOpen
+                          ? "bg-[var(--color-primary-subtle)] border-[var(--color-primary)] text-[var(--color-primary)]"
+                          : "border-[#e5e5e5] text-[#666666]"
+                      }`}
+                    >
+                      <Settings size={13} />
+                      Accès
+                    </button>
+                  )}
+                  {isSelf ? (
+                    <button onClick={() => setShowMdpModal(true)} className="flex items-center gap-1.5 text-xs text-[#666666] px-3 py-1.5 rounded-[6px] border border-[#e5e5e5]">
+                      <KeyRound size={13} />
+                      Mot de passe
+                    </button>
+                  ) : (
+                    <button onClick={() => resetMdp(c.id)} className="flex items-center gap-1.5 text-xs text-[#666666] px-3 py-1.5 rounded-[6px] border border-[#e5e5e5]">
+                      <RefreshCw size={13} />
+                      Reset mdp
+                    </button>
+                  )}
+                  {!isSelf && (
+                    <button onClick={() => toggleActif(c.id)} className="ml-auto text-[#666666]">
+                      {c.actif ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Panneau permissions mobile */}
+              {isPanelOpen && c.role !== "ADMIN" && (
+                <div className="border-t border-[#e5e5e5] p-4 bg-[#fafafa]">
+                  <p className="text-xs font-semibold text-[#666666] uppercase tracking-wide mb-3">Sections autorisées</p>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    {SECTIONS.map(({ key, label, icon: Icon }) => {
+                      const checked = perms.includes(key);
+                      return (
+                        <label
+                          key={key}
+                          className={`flex items-center gap-2 rounded-[8px] px-3 py-2.5 cursor-pointer border transition-colors ${
+                            checked
+                              ? "bg-[var(--color-primary-subtle)] border-[var(--color-primary)] text-[var(--color-primary)]"
+                              : "border-[#e5e5e5] text-[#666666] bg-white"
+                          }`}
+                        >
+                          <input type="checkbox" className="sr-only" checked={checked} onChange={() => togglePermission(c.id, key)} />
+                          <Icon size={14} />
+                          <span className="text-xs font-medium">{label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => sauvegarderPermissions(c.id)}
+                      disabled={permLoading}
+                      className="flex-1 bg-[var(--color-primary)] text-white rounded-[8px] py-2.5 text-xs font-medium disabled:opacity-50"
+                    >
+                      {permLoading ? "…" : "Enregistrer"}
+                    </button>
+                    <button onClick={() => setPermPanel(null)} className="px-4 text-xs text-[#666666] border border-[#e5e5e5] rounded-[8px]">
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {comptesFiltres.length === 0 && (
+          <div className="bg-white rounded-[12px] shadow-sm p-8 text-center">
+            <p className="text-sm text-[#666666]">Aucun compte trouvé</p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Desktop : tableau ── */}
+      <div className="hidden md:block bg-white rounded-[12px] shadow-sm overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#e5e5e5]">
               <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Compte</th>
               <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Rôle</th>
-              <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3 hidden md:table-cell">Créé le</th>
+              <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3 hidden lg:table-cell">Créé le</th>
               <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Statut</th>
               <th className="text-left text-xs font-semibold text-[#666666] px-4 py-3">Actions</th>
             </tr>
@@ -345,9 +470,7 @@ export default function ComptesPage() {
                       <p className="text-sm font-medium text-[#1a1a1a]">
                         {c.eleve ? `${c.eleve.prenom} ${c.eleve.nom}` : c.role === "PROF" ? "Professeur" : "Administrateur"}
                         {isSelf && (
-                          <span className="ml-1.5 text-[10px] bg-[var(--color-primary-subtle)] text-[var(--color-primary)] px-1.5 py-0.5 rounded-full font-semibold">
-                            Vous
-                          </span>
+                          <span className="ml-1.5 text-[10px] bg-[var(--color-primary-subtle)] text-[var(--color-primary)] px-1.5 py-0.5 rounded-full font-semibold">Vous</span>
                         )}
                       </p>
                       {editEmail?.id === c.id ? (
@@ -361,18 +484,12 @@ export default function ComptesPage() {
                           <button onClick={() => sauvegarderEmail(c.id)} disabled={emailLoading} className="text-[10px] bg-[var(--color-primary)] text-white rounded-[6px] px-2 py-1">
                             {emailLoading ? "…" : "OK"}
                           </button>
-                          <button onClick={() => setEditEmail(null)} className="text-[10px] text-[#666666] hover:text-[#1a1a1a]">
-                            <X size={12} />
-                          </button>
+                          <button onClick={() => setEditEmail(null)} className="text-[10px] text-[#666666] hover:text-[#1a1a1a]"><X size={12} /></button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1 mt-0.5">
                           <p className="text-xs text-[#666666]">{c.email}</p>
-                          <button
-                            onClick={() => setEditEmail({ id: c.id, value: c.email })}
-                            className="text-[#bbbbbb] hover:text-[var(--color-primary)] transition-colors"
-                            title="Modifier l'email"
-                          >
+                          <button onClick={() => setEditEmail({ id: c.id, value: c.email })} className="text-[#bbbbbb] hover:text-[var(--color-primary)] transition-colors">
                             <Pencil size={11} />
                           </button>
                         </div>
@@ -399,7 +516,7 @@ export default function ComptesPage() {
                         </select>
                       )}
                     </td>
-                    <td className="px-4 py-3 hidden md:table-cell text-sm text-[#666666]">
+                    <td className="px-4 py-3 hidden lg:table-cell text-sm text-[#666666]">
                       {format(new Date(c.createdAt), "d MMM yyyy", { locale: fr })}
                     </td>
                     <td className="px-4 py-3">
@@ -410,73 +527,41 @@ export default function ComptesPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {!isSelf && c.role !== "ELEVE" && (
-                          <button
-                            onClick={() => setPermPanel(isPanelOpen ? null : c.id)}
-                            title="Gérer les accès"
-                            className={`transition-colors ${isPanelOpen ? "text-[var(--color-primary)]" : "text-[#666666] hover:text-[var(--color-primary)]"}`}
-                          >
+                          <button onClick={() => setPermPanel(isPanelOpen ? null : c.id)} title="Gérer les accès"
+                            className={`transition-colors ${isPanelOpen ? "text-[var(--color-primary)]" : "text-[#666666] hover:text-[var(--color-primary)]"}`}>
                             <Settings size={15} />
                           </button>
                         )}
                         {isSelf ? (
-                          <button
-                            onClick={() => setShowMdpModal(true)}
-                            title="Changer mon mot de passe"
-                            className="text-[#666666] hover:text-[var(--color-primary)] transition-colors"
-                          >
+                          <button onClick={() => setShowMdpModal(true)} title="Changer mon mot de passe" className="text-[#666666] hover:text-[var(--color-primary)] transition-colors">
                             <KeyRound size={15} />
                           </button>
                         ) : (
-                          <button
-                            onClick={() => resetMdp(c.id)}
-                            title="Réinitialiser le mot de passe"
-                            className="text-[#666666] hover:text-[var(--color-primary)] transition-colors"
-                          >
+                          <button onClick={() => resetMdp(c.id)} title="Réinitialiser le mot de passe" className="text-[#666666] hover:text-[var(--color-primary)] transition-colors">
                             <RefreshCw size={14} />
                           </button>
                         )}
                         {!isSelf && (
-                          <button
-                            onClick={() => toggleActif(c.id)}
-                            title={c.actif ? "Désactiver" : "Activer"}
-                            className="text-[#666666] hover:text-[var(--color-primary)] transition-colors"
-                          >
+                          <button onClick={() => toggleActif(c.id)} title={c.actif ? "Désactiver" : "Activer"} className="text-[#666666] hover:text-[var(--color-primary)] transition-colors">
                             {c.actif ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                           </button>
                         )}
                       </div>
                     </td>
                   </tr>
-
-                  {/* Panneau permissions */}
                   {isPanelOpen && c.role !== "ADMIN" && (
                     <tr key={`${c.id}-perm`} className="border-b border-[#e5e5e5] bg-[#fafafa]">
                       <td colSpan={5} className="px-4 pb-4 pt-0">
                         <div className="border border-[#e5e5e5] rounded-[10px] p-4 bg-white">
-                          <div className="flex items-center justify-between mb-3">
-                            <p className="text-xs font-semibold text-[#666666] uppercase tracking-wide">Sections autorisées</p>
-                            {c.role === "ADMIN" && (
-                              <span className="text-xs text-purple-600 font-medium">Admin — accès total automatique</span>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                          <p className="text-xs font-semibold text-[#666666] uppercase tracking-wide mb-3">Sections autorisées</p>
+                          <div className="grid grid-cols-4 gap-2 mb-4">
                             {SECTIONS.map(({ key, label, icon: Icon }) => {
                               const checked = perms.includes(key);
                               return (
-                                <label
-                                  key={key}
-                                  className={`flex items-center gap-2 rounded-[8px] px-3 py-2 cursor-pointer border transition-colors ${
-                                    checked
-                                      ? "bg-[var(--color-primary-subtle)] border-[var(--color-primary)] text-[var(--color-primary)]"
-                                      : "border-[#e5e5e5] text-[#666666] hover:bg-[#f9f9f9]"
-                                  }`}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    className="sr-only"
-                                    checked={checked}
-                                    onChange={() => togglePermission(c.id, key)}
-                                  />
+                                <label key={key} className={`flex items-center gap-2 rounded-[8px] px-3 py-2 cursor-pointer border transition-colors ${
+                                  checked ? "bg-[var(--color-primary-subtle)] border-[var(--color-primary)] text-[var(--color-primary)]" : "border-[#e5e5e5] text-[#666666] hover:bg-[#f9f9f9]"
+                                }`}>
+                                  <input type="checkbox" className="sr-only" checked={checked} onChange={() => togglePermission(c.id, key)} />
                                   <Icon size={14} />
                                   <span className="text-xs font-medium">{label}</span>
                                 </label>
@@ -484,19 +569,11 @@ export default function ComptesPage() {
                             })}
                           </div>
                           <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => sauvegarderPermissions(c.id)}
-                              disabled={permLoading}
-                              className="bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2 text-xs font-medium hover:bg-[var(--color-primary-dark)] disabled:opacity-50 transition-colors"
-                            >
+                            <button onClick={() => sauvegarderPermissions(c.id)} disabled={permLoading}
+                              className="bg-[var(--color-primary)] text-white rounded-[8px] px-4 py-2 text-xs font-medium hover:bg-[var(--color-primary-dark)] disabled:opacity-50 transition-colors">
                               {permLoading ? "Enregistrement…" : "Enregistrer les accès"}
                             </button>
-                            <button
-                              onClick={() => setPermPanel(null)}
-                              className="text-xs text-[#666666] hover:text-[#1a1a1a] px-3 py-2"
-                            >
-                              Annuler
-                            </button>
+                            <button onClick={() => setPermPanel(null)} className="text-xs text-[#666666] hover:text-[#1a1a1a] px-3 py-2">Annuler</button>
                             <span className="text-xs text-[#999999] ml-auto">
                               {perms.length === 0 ? "Aucun accès" : `${perms.length} section${perms.length > 1 ? "s" : ""}`}
                             </span>
