@@ -40,7 +40,7 @@ export default async function EleveDetailPage({ params }: { params: Promise<{ id
   };
 
   const categorieLabel: Record<string, string> = {
-    ADULTES: "🥋 Adultes (14 ans+)", KIDS: "⭐ Kids (8–13 ans)",
+    ADULTES: "🥋 Adultes (14 ans+)", KIDS: "⭐ Enfants (8–13 ans)",
   };
 
   return (

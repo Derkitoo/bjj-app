@@ -36,7 +36,7 @@ interface Presence {
 }
 
 const JOURS: Record<number, string> = { 0: "Dimanche", 1: "Lundi", 2: "Mardi", 3: "Mercredi", 4: "Jeudi", 5: "Vendredi", 6: "Samedi" };
-const TYPES: Record<string, string> = { GI: "Gi", NO_GI: "No-Gi", KIDS: "Kids", COMPETITION: "Compétition", OPEN_MAT: "Open Mat" , SELF_DEFENSE: "Self-Défense"};
+const TYPES: Record<string, string> = { GI: "Gi", NO_GI: "No-Gi", KIDS: "Enfants", COMPETITION: "Compétition", OPEN_MAT: "Open Mat" };
 const TYPE_DOTS: Record<string, string> = { GI: "#3b82f6", NO_GI: "#8b5cf6", KIDS: "#22c55e", COMPETITION: "#ef4444", OPEN_MAT: "#94a3b8" };
 
 const BELT_ORDER: Record<string, number> = { NOIRE: 0, MARRON: 1, VIOLETTE: 2, BLEUE: 3, BLANCHE: 4 };
@@ -227,7 +227,7 @@ export default function PresenceCoursPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
                             <p className="text-sm font-medium text-[#1a1a1a] truncate">{TYPES[c.type]}</p>
-                            {c.categorie === "KIDS" && <span className="text-[9px] px-1 py-0.5 rounded-full bg-green-100 text-green-700 font-medium flex-shrink-0">Kids</span>}
+                            {c.categorie === "KIDS" && <span className="text-[9px] px-1 py-0.5 rounded-full bg-green-100 text-green-700 font-medium flex-shrink-0">Enfants</span>}
                             {c.categorie === "ADULTES" && <span className="text-[9px] px-1 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium flex-shrink-0">Adultes</span>}
                           </div>
                           <p className="text-xs text-[#999999] flex items-center gap-1 mt-0.5">
@@ -275,7 +275,7 @@ export default function PresenceCoursPage() {
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">🥋 Adultes</span>
                   )}
                   {selected.categorie === "KIDS" && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">⭐ Kids</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">⭐ Enfants</span>
                   )}
                 </div>
                 <p className="text-xs text-[#999999] mt-0.5 flex items-center gap-1">
@@ -362,7 +362,7 @@ export default function PresenceCoursPage() {
               <div className="px-5 pt-4 pb-3 border-b border-[#f0f0f0] bg-[#fafafa]">
                 {selected && selected.categorie !== "TOUS" && (
                   <p className="text-xs text-[#999999] mb-2">
-                    {selected.categorie === "KIDS" ? "⭐ Affichage des élèves Kids uniquement" : "🥋 Affichage des élèves Adultes uniquement"}
+                    {selected.categorie === "KIDS" ? "⭐ Affichage des élèves Enfants uniquement" : "🥋 Affichage des élèves Adultes uniquement"}
                   </p>
                 )}
                 <div className="relative mb-2">

@@ -28,7 +28,7 @@ interface Cours {
 }
 
 const JOURS_LABEL: Record<number, string> = { 0: "Dimanche", 1: "Lundi", 2: "Mardi", 3: "Mercredi", 4: "Jeudi", 5: "Vendredi", 6: "Samedi" };
-const TYPES: Record<string, string> = { GI: "Gi", NO_GI: "No-Gi", KIDS: "Kids", COMPETITION: "Compétition", OPEN_MAT: "Open Mat" };
+const TYPES: Record<string, string> = { GI: "Gi", NO_GI: "No-Gi", KIDS: "Enfants", COMPETITION: "Compétition", OPEN_MAT: "Open Mat" };
 const TYPE_COLORS: Record<string, { bg: string; border: string; text: string; dot: string }> = {
   GI:          { bg: "#dbeafe", border: "#93c5fd", text: "#1e40af", dot: "#3b82f6" },
   NO_GI:       { bg: "#ede9fe", border: "#c4b5fd", text: "#6d28d9", dot: "#8b5cf6" },

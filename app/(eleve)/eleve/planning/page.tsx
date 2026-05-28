@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 
 const JOURS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
 const JOURS_SEMAINE = [1, 2, 3, 4, 5, 6, 0];
-const TYPES: Record<string, string> = { GI: "Gi", NO_GI: "No-Gi", KIDS: "Kids", COMPETITION: "Compétition", OPEN_MAT: "Open Mat" };
+const TYPES: Record<string, string> = { GI: "Gi", NO_GI: "No-Gi", KIDS: "Enfants", COMPETITION: "Compétition", OPEN_MAT: "Open Mat" };
 const COULEURS: Record<string, string> = { GI: "bg-blue-100 text-blue-800", NO_GI: "bg-purple-100 text-purple-800", KIDS: "bg-green-100 text-green-800", COMPETITION: "bg-red-100 text-red-800", OPEN_MAT: "bg-gray-100 text-gray-700" };
 
 export default async function PlanningElevePage() {

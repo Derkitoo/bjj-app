@@ -44,7 +44,7 @@ const STATUTS = [
 const CATEGORIES = [
   { value: "", label: "Tous" },
   { value: "ADULTES", label: "🥋 Adultes" },
-  { value: "KIDS", label: "⭐ Kids" },
+  { value: "KIDS", label: "⭐ Enfants" },
 ];
 
 const getInactivityBadge = (presences: { date: string }[], actif: boolean) => {
@@ -232,7 +232,7 @@ export default function ElevesList({ eleves, initialCeinture, initialStatut }: P
                         {eleve.prenom} {eleve.nom}
                       </Link>
                       {eleve.categorie === "KIDS" && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium flex-shrink-0">⭐ Kids</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium flex-shrink-0">⭐ Enfants</span>
                       )}
                     </div>
                     {eleve.email && <p className="text-xs text-[#666666]">{eleve.email}</p>}

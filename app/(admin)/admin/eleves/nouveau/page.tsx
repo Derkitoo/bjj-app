@@ -131,7 +131,7 @@ export default function NouvelElevePage() {
           <div>
             <label className="block text-sm font-medium text-[#1a1a1a] mb-1">Catégorie</label>
             <div className="grid grid-cols-2 gap-2">
-              {[{ v: "ADULTES", label: "🥋 Adultes", sub: "14 ans et +" }, { v: "KIDS", label: "⭐ Kids", sub: "8 à 13 ans" }].map(({ v, label, sub }) => (
+              {[{ v: "ADULTES", label: "🥋 Adultes", sub: "14 ans et +" }, { v: "KIDS", label: "⭐ Enfants", sub: "8 à 13 ans" }].map(({ v, label, sub }) => (
                 <button key={v} type="button" onClick={() => setForm((f) => ({ ...f, categorie: v }))}
                   className={`py-2 px-3 rounded-[8px] border-2 text-left transition-colors ${form.categorie === v ? "border-[var(--color-primary)] bg-[var(--color-primary-subtle)]" : "border-[#e5e5e5] hover:border-[#cccccc]"}`}>
                   <p className={`text-sm font-semibold ${form.categorie === v ? "text-[var(--color-primary)]" : "text-[#1a1a1a]"}`}>{label}</p>

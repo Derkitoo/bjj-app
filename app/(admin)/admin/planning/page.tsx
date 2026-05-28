@@ -32,10 +32,9 @@ const JOURS_SHORT: Record<number, string> = { 0: "Dim", 1: "Lun", 2: "Mar", 3: "
 const TYPES: Record<string, string> = {
   GI: "Gi",
   NO_GI: "No-Gi",
-  KIDS: "Kids",
+  KIDS: "Enfants",
   COMPETITION: "Compétition",
   OPEN_MAT: "Open Mat",
-  SELF_DEFENSE: "Self-Défense",
 };
 
 const TYPE_COLORS: Record<string, { bg: string; border: string; text: string; dot: string }> = {
@@ -44,14 +43,13 @@ const TYPE_COLORS: Record<string, { bg: string; border: string; text: string; do
   KIDS:         { bg: "#dcfce7", border: "#86efac",  text: "#166534", dot: "#22c55e" },
   COMPETITION:  { bg: "#fee2e2", border: "#fca5a5",  text: "#dc2626", dot: "#ef4444" },
   OPEN_MAT:     { bg: "#f1f5f9", border: "#cbd5e1",  text: "#475569", dot: "#94a3b8" },
-  SELF_DEFENSE: { bg: "#fef3c7", border: "#fcd34d",  text: "#92400e", dot: "#f59e0b" },
 };
 
 const FALLBACK_COLOR = TYPE_COLORS.OPEN_MAT;
 
 const CATEGORIE_BADGE: Record<string, { label: string; cls: string }> = {
   ADULTES: { label: "🥋 Adultes", cls: "bg-blue-100 text-blue-700" },
-  KIDS:    { label: "⭐ Kids",    cls: "bg-green-100 text-green-700" },
+  KIDS:    { label: "⭐ Enfants", cls: "bg-green-100 text-green-700" },
 };
 
 const HOUR_START = 7;
@@ -402,7 +400,7 @@ export default function PlanningPage() {
               <div>
                 <label className="block text-xs font-medium text-[#666666] mb-1.5">Catégorie d&apos;élèves</label>
                 <div className="grid grid-cols-3 gap-1.5">
-                  {[{ v: "TOUS", label: "Tous" }, { v: "ADULTES", label: "🥋 Adultes" }, { v: "KIDS", label: "⭐ Kids" }].map(({ v, label }) => (
+                  {[{ v: "TOUS", label: "Tous" }, { v: "ADULTES", label: "🥋 Adultes" }, { v: "KIDS", label: "⭐ Enfants" }].map(({ v, label }) => (
                     <button
                       key={v}
                       type="button"
