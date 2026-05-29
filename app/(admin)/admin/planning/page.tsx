@@ -130,8 +130,10 @@ export default function PlanningPage() {
   };
 
   const supprimer = async (id: string) => {
-    await fetch(`/api/cours/${id}`, { method: "DELETE" });
-    setCours((prev) => prev.filter((c) => c.id !== id));
+    const res = await fetch(`/api/cours/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setCours((prev) => prev.filter((c) => c.id !== id));
+    }
   };
 
   const viderPlanning = async () => {

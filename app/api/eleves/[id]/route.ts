@@ -74,18 +74,19 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const { id } = await params;
   const { searchParams } = new URL(req.url);
 
-  if (searchParams.get("hard") === "true") {
-    await prisma.$transaction([
-      prisma.presence.deleteMany({ where: { eleveId: id } }),
-      prisma.promotion.deleteMany({ where: { eleveId: id } }),
-      prisma.paiement.deleteMany({ where: { eleveId: id } }),
-      prisma.cotisation.deleteMany({ where: { eleveId: id } }),
-      prisma.user.updateMany({ where: { eleveId: id }, data: { eleveId: null } }),
-      prisma.eleve.delete({ where: { id } }),
-    ]);
-    return NextResponse.json({ success: true });
-  }
+  // Suppression définitive
+  const cotisations = await prisma.cotisation.findMany({ where: { eleveId: id }, select: { id: true } });
+  const cotisationIds = cotisations.map((c) => c.id);
 
-  await prisma.eleve.update({ where: { id }, data: { actif: false } });
+  await prisma.$transaction([
+    prisma.examenParticipant.deleteMany({ where: { eleveId: id } }),
+    prisma.presence.deleteMany({ where: { eleveId: id } }),
+    prisma.promotion.deleteMany({ where: { eleveId: id } }),
+    prisma.paiement.deleteMany({ where: { eleveId: id } }),
+    prisma.echeance.deleteMany({ where: { cotisationId: { in: cotisationIds } } }),
+    prisma.cotisation.deleteMany({ where: { eleveId: id } }),
+    prisma.user.updateMany({ where: { eleveId: id }, data: { eleveId: null } }),
+    prisma.eleve.delete({ where: { id } }),
+  ]);
   return NextResponse.json({ success: true });
 }
