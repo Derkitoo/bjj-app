@@ -59,9 +59,11 @@ export default function EleveWizard({ initialForm = {}, onSubmit, loading, error
   };
 
   return (
-    <div className="max-w-xl">
-      {/* Barre de progression */}
-      <div className="mb-8">
+    <div className="lg:grid lg:grid-cols-[220px_1fr] lg:gap-8 lg:items-start">
+
+      {/* ── Étapes — sidebar desktop / barre mobile ── */}
+      {/* Mobile : barre horizontale */}
+      <div className="lg:hidden mb-8">
         <div className="flex items-center justify-between mb-3">
           {STEPS.map((s, i) => (
             <button
@@ -71,28 +73,62 @@ export default function EleveWizard({ initialForm = {}, onSubmit, loading, error
               className="flex flex-col items-center gap-1.5 flex-1"
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                i < step
-                  ? "bg-[var(--color-primary)] text-white"
-                  : i === step
-                  ? "bg-[var(--color-primary)] text-white ring-4 ring-[var(--color-primary-subtle)]"
+                i < step ? "bg-[var(--color-primary)] text-white"
+                  : i === step ? "bg-[var(--color-primary)] text-white ring-4 ring-[var(--color-primary-subtle)]"
                   : "bg-[#f0f0f0] text-[#aaaaaa]"
               }`}>
                 {i < step ? <Check size={14} /> : i + 1}
               </div>
-              <span className={`text-[10px] font-medium hidden sm:block ${i === step ? "text-[var(--color-primary)]" : i < step ? "text-[#666666]" : "text-[#cccccc]"}`}>
+              <span className={`text-[10px] font-medium ${i === step ? "text-[var(--color-primary)]" : i < step ? "text-[#666666]" : "text-[#cccccc]"}`}>
                 {s.short}
               </span>
             </button>
           ))}
         </div>
         <div className="relative h-1 bg-[#f0f0f0] rounded-full mx-4">
-          <div
-            className="absolute h-full bg-[var(--color-primary)] rounded-full transition-all duration-500"
-            style={{ width: `${(step / (STEPS.length - 1)) * 100}%` }}
-          />
+          <div className="absolute h-full bg-[var(--color-primary)] rounded-full transition-all duration-500"
+            style={{ width: `${(step / (STEPS.length - 1)) * 100}%` }} />
         </div>
       </div>
 
+      {/* Desktop : sidebar verticale */}
+      <div className="hidden lg:block bg-white rounded-[16px] shadow-sm p-5 sticky top-6">
+        <p className="text-xs font-semibold text-[#aaaaaa] uppercase tracking-wide mb-4">Étapes</p>
+        <div className="space-y-1">
+          {STEPS.map((s, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => { if (i < step || (i === step + 1 && canNext())) setStep(i); }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-sm font-medium transition-colors text-left ${
+                i === step ? "bg-[var(--color-primary-subtle)] text-[var(--color-primary)]"
+                  : i < step ? "text-[#666666] hover:bg-[#f9f9f9]"
+                  : "text-[#cccccc] cursor-default"
+              }`}
+            >
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                i < step ? "bg-[var(--color-primary)] text-white"
+                  : i === step ? "bg-[var(--color-primary)] text-white"
+                  : "bg-[#f0f0f0] text-[#aaaaaa]"
+              }`}>
+                {i < step ? <Check size={12} /> : i + 1}
+              </div>
+              {s.label}
+            </button>
+          ))}
+        </div>
+        <div className="mt-5 pt-4 border-t border-[#f0f0f0]">
+          <p className="text-xs text-[#aaaaaa]">
+            {step + 1} / {STEPS.length} complétées
+          </p>
+          <div className="mt-2 h-1.5 bg-[#f0f0f0] rounded-full overflow-hidden">
+            <div className="h-full bg-[var(--color-primary)] rounded-full transition-all duration-500"
+              style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Contenu formulaire ── */}
       <form onSubmit={handleSubmit}>
         <div className="bg-white rounded-[16px] shadow-sm p-6">
           <h2 className="font-bold text-[#1a1a1a] text-lg mb-1">{STEPS[step].label}</h2>
@@ -347,6 +383,6 @@ export default function EleveWizard({ initialForm = {}, onSubmit, loading, error
           </button>
         </div>
       </form>
-    </div>
+    </div>{/* fin lg:grid */}
   );
 }
