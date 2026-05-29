@@ -79,6 +79,7 @@ export default function ComptesPage() {
   const [permPanel, setPermPanel] = useState<string | null>(null);
   const [permState, setPermState] = useState<Record<string, string[]>>({});
   const [permLoading, setPermLoading] = useState(false);
+  const [roleError, setRoleError] = useState<string | null>(null);
 
   const charger = () =>
     fetch("/api/comptes").then((r) => r.json()).then((data: Compte[]) => {
@@ -127,6 +128,7 @@ export default function ComptesPage() {
 
   const changerRole = async (id: string, role: string) => {
     setRoleLoading(id);
+    setRoleError(null);
     const res = await fetch(`/api/comptes/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -134,7 +136,10 @@ export default function ComptesPage() {
     });
     setRoleLoading(null);
     if (res.ok) {
-      setComptes((prev) => prev.map((c) => c.id === id ? { ...c, role } : c));
+      await charger();
+    } else {
+      const data = await res.json();
+      setRoleError(data.error ?? "Erreur lors du changement de rôle");
     }
   };
 
@@ -300,6 +305,13 @@ export default function ComptesPage() {
             {copied ? <Check size={14} /> : <Copy size={14} />}
             {copied ? "Copié !" : "Copier"}
           </button>
+        </div>
+      )}
+
+      {roleError && (
+        <div className="bg-red-50 border border-red-200 rounded-[10px] px-4 py-3 mb-4 flex items-center justify-between">
+          <p className="text-sm text-red-700">{roleError}</p>
+          <button onClick={() => setRoleError(null)} className="text-red-400 hover:text-red-700 ml-4"><X size={14} /></button>
         </div>
       )}
 
