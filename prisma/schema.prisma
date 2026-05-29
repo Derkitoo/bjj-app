@@ -191,6 +191,7 @@ model SeanceTechnique {
   id         String   @id @default(cuid())
   date       DateTime
   type       String
+  public     String   @default("ADULTES")
   techniques String
   notes      String?
   createdAt  DateTime @default(now())

@@ -9,6 +9,7 @@ interface SeanceTechnique {
   id: string;
   date: string;
   type: string;
+  public: string;
   techniques: string;
   notes: string | null;
 }

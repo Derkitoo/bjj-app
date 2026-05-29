@@ -9,10 +9,17 @@ interface SeanceTechnique {
   id: string;
   date: string;
   type: string;
+  public: string;
   techniques: string;
   notes: string | null;
   createdAt: string;
 }
+
+const PUBLIC_OPTIONS: Record<string, { label: string; bg: string; text: string }> = {
+  ADULTES: { label: "Adultes",  bg: "bg-orange-50",  text: "text-orange-700" },
+  KIDS:    { label: "Kids",     bg: "bg-teal-50",    text: "text-teal-700" },
+  TOUS:    { label: "Tous",     bg: "bg-gray-100",   text: "text-gray-600" },
+};
 
 const TYPES: Record<string, string> = {
   GI: "Gi", NO_GI: "No-Gi", KIDS: "Enfants", COMPETITION: "Compétition", OPEN_MAT: "Open Mat",
@@ -51,6 +58,7 @@ export default function CoursPage() {
 
   const [formDate, setFormDate] = useState(new Date().toISOString().split("T")[0]);
   const [formType, setFormType] = useState("GI");
+  const [formPublic, setFormPublic] = useState("ADULTES");
   const [formTechniques, setFormTechniques] = useState<string[]>([""]);
   const [formNotes, setFormNotes] = useState("");
   const [saving, setSaving] = useState(false);
@@ -72,12 +80,14 @@ export default function CoursPage() {
       setEditId(seance.id);
       setFormDate(seance.date.split("T")[0]);
       setFormType(seance.type);
+      setFormPublic(seance.public ?? "ADULTES");
       setFormTechniques(JSON.parse(seance.techniques));
       setFormNotes(seance.notes ?? "");
     } else {
       setEditId(null);
       setFormDate(new Date().toISOString().split("T")[0]);
       setFormType("GI");
+      setFormPublic("ADULTES");
       setFormTechniques([""]);
       setFormNotes("");
     }
@@ -95,13 +105,13 @@ export default function CoursPage() {
       await fetch(`/api/seances/${editId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: formDate, type: formType, techniques, notes: formNotes }),
+        body: JSON.stringify({ date: formDate, type: formType, public: formPublic, techniques, notes: formNotes }),
       });
     } else {
       await fetch("/api/seances", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: formDate, type: formType, techniques, notes: formNotes }),
+        body: JSON.stringify({ date: formDate, type: formType, public: formPublic, techniques, notes: formNotes }),
       });
     }
     setSaving(false);
@@ -254,6 +264,9 @@ export default function CoursPage() {
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${colors.bg} ${colors.text}`}>
                             {TYPES[s.type] ?? s.type}
                           </span>
+                          {(() => { const p = PUBLIC_OPTIONS[s.public]; return p ? (
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.bg} ${p.text}`}>{p.label}</span>
+                          ) : null; })()}
                         </div>
                         <p className="text-xs mt-0.5 truncate" style={{ color: "var(--c-text-3)" }}>
                           {techs.length} technique{techs.length > 1 ? "s" : ""} · {techs.slice(0, 3).join(", ")}{techs.length > 3 ? "…" : ""}
@@ -413,6 +426,21 @@ export default function CoursPage() {
                   <select value={formType} onChange={(e) => setFormType(e.target.value)} className={inputClass}>
                     {Object.entries(TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                   </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--c-text-2)" }}>Destiné à</label>
+                <div className="flex gap-2">
+                  {Object.entries(PUBLIC_OPTIONS).map(([k, v]) => (
+                    <button key={k} type="button"
+                      onClick={() => setFormPublic(k)}
+                      className={`flex-1 py-2 rounded-[8px] text-sm font-medium border transition-all ${
+                        formPublic === k ? `${v.bg} ${v.text} border-current` : "border-[#e5e5e5] text-gray-500"
+                      }`}>
+                      {v.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 

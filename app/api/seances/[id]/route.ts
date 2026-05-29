@@ -10,13 +10,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const { id } = await params;
-  const { date, type, techniques, notes } = await req.json();
+  const { date, type, public: pub, techniques, notes } = await req.json();
 
   const seance = await prisma.seanceTechnique.update({
     where: { id },
     data: {
       ...(date ? { date: new Date(date) } : {}),
       ...(type ? { type } : {}),
+      ...(pub ? { public: pub } : {}),
       ...(techniques ? { techniques: JSON.stringify(techniques) } : {}),
       ...(notes !== undefined ? { notes: notes || null } : {}),
     },

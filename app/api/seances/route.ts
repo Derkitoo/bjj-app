@@ -21,10 +21,23 @@ export async function GET(req: NextRequest) {
     dateMax = new Date(y2, 7, 31);
   }
 
+  let publicFilter: string[] | undefined;
+  if (role === "ELEVE") {
+    const eleveId = (session.user as { eleveId?: string }).eleveId;
+    if (eleveId) {
+      const eleve = await prisma.eleve.findUnique({ where: { id: eleveId }, select: { categorie: true } });
+      const categorie = eleve?.categorie ?? "ADULTES";
+      publicFilter = [categorie, "TOUS"];
+    } else {
+      publicFilter = ["TOUS"];
+    }
+  }
+
   const seances = await prisma.seanceTechnique.findMany({
     where: {
       ...(dateMin && dateMax ? { date: { gte: dateMin, lte: dateMax } } : {}),
       ...(type ? { type } : {}),
+      ...(publicFilter ? { public: { in: publicFilter } } : {}),
     },
     orderBy: { date: "desc" },
   });
@@ -39,7 +52,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 
-  const { date, type, techniques, notes } = await req.json();
+  const { date, type, public: pub, techniques, notes } = await req.json();
   if (!date || !type || !techniques?.length) {
     return NextResponse.json({ error: "date, type et techniques requis" }, { status: 400 });
   }
@@ -48,6 +61,7 @@ export async function POST(req: NextRequest) {
     data: {
       date: new Date(date),
       type,
+      public: pub ?? "ADULTES",
       techniques: JSON.stringify(techniques),
       notes: notes || null,
     },
