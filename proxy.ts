@@ -25,7 +25,8 @@ export default auth((req) => {
       const section = SECTIONS.find((s) => pathname.startsWith(`/admin/${s}`));
       if (section && !permissions.includes(section)) {
         const first = permissions[0];
-        return NextResponse.redirect(new URL(first ? `/admin/${first}` : "/login", req.url));
+        if (first) return NextResponse.redirect(new URL(`/admin/${first}`, req.url));
+        return NextResponse.redirect(new URL("/admin/no-access", req.url));
       }
     }
   }
