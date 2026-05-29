@@ -80,7 +80,6 @@ export default function ComptesPage() {
   const [permState, setPermState] = useState<Record<string, string[]>>({});
   const [permLoading, setPermLoading] = useState(false);
   const [roleError, setRoleError] = useState<string | null>(null);
-  const [roleSuccess, setRoleSuccess] = useState<string | null>(null);
 
   const charger = () =>
     fetch("/api/comptes").then((r) => r.json()).then((data: Compte[]) => {
@@ -130,19 +129,17 @@ export default function ComptesPage() {
   const changerRole = async (id: string, role: string) => {
     setRoleLoading(id);
     setRoleError(null);
-    setRoleSuccess(null);
     const res = await fetch(`/api/comptes/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "changeRole", role }),
     });
-    const data = await res.json();
     setRoleLoading(null);
     if (res.ok) {
-      setRoleSuccess(`Rôle changé → ${ROLE_LABEL[role] ?? role} (réponse : ${JSON.stringify(data)})`);
-      await charger();
+      setComptes((prev) => prev.map((c) => c.id === id ? { ...c, role } : c));
     } else {
-      setRoleError(data.error ?? `Erreur ${res.status} : ${JSON.stringify(data)}`);
+      const data = await res.json();
+      setRoleError(data.error ?? "Erreur lors du changement de rôle");
     }
   };
 
@@ -315,12 +312,6 @@ export default function ComptesPage() {
         <div className="bg-red-50 border border-red-200 rounded-[10px] px-4 py-3 mb-4 flex items-center justify-between">
           <p className="text-sm text-red-700">{roleError}</p>
           <button onClick={() => setRoleError(null)} className="text-red-400 hover:text-red-700 ml-4"><X size={14} /></button>
-        </div>
-      )}
-      {roleSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-[10px] px-4 py-3 mb-4 flex items-center justify-between">
-          <p className="text-sm text-green-700 font-mono">{roleSuccess}</p>
-          <button onClick={() => setRoleSuccess(null)} className="text-green-400 hover:text-green-700 ml-4"><X size={14} /></button>
         </div>
       )}
 
