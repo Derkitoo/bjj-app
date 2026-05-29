@@ -52,10 +52,10 @@ export async function GET() {
       where: { annule: false, recurrent: true },
       select: { id: true, type: true, jour: true, heureDebut: true, duree: true },
     }),
-    prisma.examen.findFirst({
-      where: { eleveId, statut: "EN_ATTENTE" },
-      orderBy: { createdAt: "desc" },
-      select: { id: true, ceintureCible: true, techniques: { select: { statut: true } } },
+    prisma.examenParticipant.findFirst({
+      where: { eleveId, resultat: null, session: { statut: { not: "TERMINE" } } },
+      orderBy: { session: { date: "desc" } },
+      select: { id: true, sessionId: true, session: { select: { ceintureCible: true } }, evaluations: { select: { statut: true } } },
     }),
   ]);
 
@@ -85,10 +85,10 @@ export async function GET() {
 
   const examen = examenEnCours
     ? {
-        id: examenEnCours.id,
-        ceintureCible: examenEnCours.ceintureCible,
-        nbMaitrises: examenEnCours.techniques.filter((t) => t.statut === "MAITRISE").length,
-        total: examenEnCours.techniques.length,
+        id: examenEnCours.sessionId,
+        ceintureCible: examenEnCours.session.ceintureCible,
+        nbMaitrises: examenEnCours.evaluations.filter((e) => e.statut === "VALIDE").length,
+        total: examenEnCours.evaluations.length,
       }
     : null;
 
