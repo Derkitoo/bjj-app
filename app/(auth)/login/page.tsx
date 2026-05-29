@@ -37,7 +37,7 @@ function LoginForm() {
 
     if (callbackUrl) {
       router.push(callbackUrl);
-    } else if (role === "ADMIN") {
+    } else if (role === "ADMIN" || role === "PROF") {
       router.push("/admin/dashboard");
     } else {
       router.push("/eleve/accueil");
