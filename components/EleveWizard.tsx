@@ -383,6 +383,6 @@ export default function EleveWizard({ initialForm = {}, onSubmit, loading, error
           </button>
         </div>
       </form>
-    </div>{/* fin lg:grid */}
+    </div>
   );
 }
