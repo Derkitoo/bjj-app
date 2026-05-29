@@ -9,12 +9,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/login",
   },
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user) {
         token.role = (user as { role: string }).role;
         token.eleveId = (user as { eleveId: string | null }).eleveId;
         token.motDePasseTemporaire = (user as { motDePasseTemporaire: boolean }).motDePasseTemporaire;
         token.permissions = (user as { permissions: string }).permissions;
+      } else if (token.sub) {
+        const fresh = await prisma.user.findUnique({ where: { id: token.sub } });
+        if (fresh) {
+          token.role = fresh.role;
+          token.permissions = fresh.permissions;
+          token.motDePasseTemporaire = fresh.motDePasseTemporaire;
+        }
       }
       return token;
     },
