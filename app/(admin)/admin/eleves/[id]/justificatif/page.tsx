@@ -12,7 +12,8 @@ function getSaisonActuelle(): string {
 
 export default async function JustificatifPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  if (!session || (session.user as { role: string }).role !== "ADMIN") redirect("/login");
+  const role = (session?.user as { role: string })?.role;
+  if (!session || (role !== "ADMIN" && role !== "PROF")) redirect("/login");
 
   const { id } = await params;
   const saison = getSaisonActuelle();
