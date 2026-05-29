@@ -43,7 +43,7 @@ function LoginForm() {
       let permissions: string[] = [];
       try { permissions = JSON.parse(session?.user?.permissions ?? "[]"); } catch { permissions = []; }
       const first = permissions[0];
-      router.push(first ? `/admin/${first}` : "/admin/dashboard");
+      router.push(first ? `/admin/${first}` : "/admin/no-access");
     } else {
       router.push("/eleve/accueil");
     }

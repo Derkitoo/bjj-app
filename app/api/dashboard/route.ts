@@ -5,7 +5,8 @@ import { subMonths, startOfMonth, endOfMonth } from "date-fns";
 
 export async function GET() {
   const session = await auth();
-  if (!session || (session.user as { role: string }).role !== "ADMIN") {
+  const role = (session?.user as { role: string })?.role;
+  if (!session || (role !== "ADMIN" && role !== "PROF")) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 
