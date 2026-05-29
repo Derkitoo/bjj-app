@@ -115,18 +115,18 @@ export default async function ProfilElevePage() {
 
         {/* Bande stats */}
         <div
-          className="grid grid-cols-3 divide-x"
-          style={{
-            backgroundColor: isLight ? "rgba(0,0,0,0.04)" : "rgba(0,0,0,0.25)",
-            divideColor: isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.1)",
-          }}
+          className="grid grid-cols-3"
+          style={{ backgroundColor: isLight ? "rgba(0,0,0,0.04)" : "rgba(0,0,0,0.25)" }}
         >
           {[
             { icon: CheckSquare, value: totalPresences, label: "Total" },
             { icon: TrendingUp,  value: presencesMois,  label: "Ce mois" },
             { icon: Award,       value: moyenneMois,    label: "Moy/mois" },
-          ].map(({ icon: Icon, value, label }) => (
-            <div key={label} className="flex flex-col items-center py-3 px-2">
+          ].map(({ icon: Icon, value, label }, idx) => (
+            <div key={label}
+              className="flex flex-col items-center py-3 px-2"
+              style={{ borderLeft: idx > 0 ? `1px solid ${isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.1)"}` : undefined }}
+            >
               <Icon size={14} style={{ color: isLight ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.5)" }} className="mb-1" />
               <p className="text-xl font-bold" style={{ color: beltStyle.text }}>{value}</p>
               <p className="text-[10px] mt-0.5" style={{ color: isLight ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.55)" }}>
