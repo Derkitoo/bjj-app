@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import BottomNav from "@/components/BottomNav";
+import AdminMainWrapper from "@/components/AdminMainWrapper";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -14,11 +15,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const safeRole = role as "ADMIN" | "PROF";
 
   return (
-    <div className="min-h-screen bg-[#f9f9f9]">
+    <div className="min-h-screen bg-[#f4f5f7]">
       <Sidebar role={safeRole} />
-      <main className="md:ml-60 pb-20 md:pb-0">
+      <AdminMainWrapper>
         <div className="p-6 md:p-8">{children}</div>
-      </main>
+      </AdminMainWrapper>
       <BottomNav role={safeRole} />
     </div>
   );

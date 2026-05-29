@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Users, CheckSquare, Award, Newspaper, TrendingUp, CreditCard, Settings, X, Eye, EyeOff, Medal } from "lucide-react";
+import { useSession } from "next-auth/react";
+import {
+  Users, CheckSquare, Award, Newspaper, TrendingUp, CreditCard,
+  Settings, X, Eye, EyeOff, Medal, UserPlus, QrCode, ClipboardList, Calendar,
+} from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -138,7 +142,7 @@ function DonutChart({ data, total }: { data: Record<string, number>; total: numb
                 style={{ backgroundColor: BELT_COLORS[belt], outline: belt === "BLANCHE" ? "1px solid #ccc" : "none" }} />
               <span className="text-xs w-14" style={{ color: "var(--c-text-2)" }}>{BELT_LABELS[belt]}</span>
               <div className="flex-1 rounded-full h-1.5" style={{ backgroundColor: "var(--c-border)" }}>
-                <div className="h-1.5 rounded-full animate-progress"
+                <div className="h-1.5 rounded-full"
                   style={{ width: `${pct}%`, backgroundColor: BELT_COLORS[belt] }} />
               </div>
               <span className="text-xs font-semibold w-4 text-right" style={{ color: "var(--c-text-1)" }}>{count}</span>
@@ -157,32 +161,60 @@ function KpiCard({ label, value, sub, icon: Icon, link, linkLabel, delay = 0 }: 
 }) {
   const count = useCountUp(value);
   return (
-    <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up relative overflow-hidden"
-      style={{ animationDelay: `${delay}ms` }}>
+    <div className="rounded-[16px] p-5 animate-fade-up relative overflow-hidden"
+      style={{ animationDelay: `${delay}ms`, backgroundColor: "var(--c-card)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
       <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-[0.06]"
         style={{ backgroundColor: "var(--color-primary)" }} />
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm font-medium" style={{ color: "var(--c-text-2)" }}>{label}</span>
+        <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--c-text-3)" }}>{label}</span>
         <div className="w-9 h-9 rounded-[10px] flex items-center justify-center"
           style={{ backgroundColor: "var(--color-primary-subtle)" }}>
           <Icon size={17} style={{ color: "var(--color-primary)" }} />
         </div>
       </div>
-      <p className="text-4xl font-bold tracking-tight" style={{ color: "var(--c-text-1)" }}>{count}</p>
+      <p className="text-3xl font-bold tracking-tight" style={{ color: "var(--c-text-1)" }}>{count}</p>
       {sub && <p className="text-xs mt-1.5" style={{ color: "var(--c-text-3)" }}>{sub}</p>}
       {link && linkLabel && (
-        <Link href={link} className="text-xs mt-2 block hover:underline font-medium"
-          style={{ color: "var(--color-primary)" }}>{linkLabel}</Link>
+        <Link href={link} className="text-xs mt-3 block hover:underline font-medium"
+          style={{ color: "var(--color-primary)" }}>{linkLabel} →</Link>
       )}
     </div>
   );
 }
 
+/* ── Quick Action ── */
+function QuickAction({ href, icon: Icon, label, desc }: { href: string; icon: React.ElementType; label: string; desc: string }) {
+  return (
+    <Link href={href}
+      className="flex items-center gap-3 rounded-[12px] px-4 py-3.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
+      style={{ backgroundColor: "var(--c-card)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+      <div className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0"
+        style={{ backgroundColor: "var(--color-primary-subtle)" }}>
+        <Icon size={19} style={{ color: "var(--color-primary)" }} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold truncate" style={{ color: "var(--c-text-1)" }}>{label}</p>
+        <p className="text-xs truncate" style={{ color: "var(--c-text-3)" }}>{desc}</p>
+      </div>
+    </Link>
+  );
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Bonjour";
+  if (h < 18) return "Bon après-midi";
+  return "Bonsoir";
+}
+
 /* ── Main ── */
 export default function DashboardPage() {
+  const { data: session } = useSession();
   const [stats, setStats] = useState<Stats | null>(null);
   const [visible, setVisible] = useState<Record<string, boolean>>(DEFAULT_VISIBLE);
   const [showSettings, setShowSettings] = useState(false);
+
+  const firstName = session?.user?.name?.split(" ")[0] ?? "";
 
   useEffect(() => {
     const saved = localStorage.getItem(LS_KEY);
@@ -214,25 +246,37 @@ export default function DashboardPage() {
   const totalEleves = stats.kpis.totalEleves;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-7">
+    <div className="space-y-6">
+
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a1a1a]">Tableau de bord</h1>
-          <p className="text-sm mt-0.5" style={{ color: "var(--c-text-2)" }}>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--c-text-1)" }}>
+            {getGreeting()}{firstName ? `, ${firstName}` : ""} 👋
+          </h1>
+          <p className="text-sm mt-0.5 capitalize" style={{ color: "var(--c-text-3)" }}>
             {format(new Date(), "EEEE d MMMM yyyy", { locale: fr })}
           </p>
         </div>
         <button onClick={() => setShowSettings(true)}
-          className="flex items-center gap-2 text-sm rounded-[8px] px-3 py-2 transition-colors"
+          className="flex items-center gap-2 text-sm rounded-[8px] px-3 py-2 transition-colors flex-shrink-0"
           style={{ border: "1px solid var(--c-border)", color: "var(--c-text-2)", backgroundColor: "var(--c-card)" }}>
           <Settings size={15} />
           <span className="hidden sm:inline">Personnaliser</span>
         </button>
       </div>
 
+      {/* Quick actions */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <QuickAction href="/admin/eleves/nouveau" icon={UserPlus} label="Nouvel élève" desc="Ajouter un membre" />
+        <QuickAction href="/admin/presence" icon={QrCode} label="Appel / QR" desc="Marquer les présences" />
+        <QuickAction href="/admin/examens/nouveau" icon={ClipboardList} label="Nouvel examen" desc="Créer une session" />
+        <QuickAction href="/admin/planning" icon={Calendar} label="Planning" desc="Voir le programme" />
+      </div>
+
       {/* KPIs */}
       {WIDGETS_CONFIG.filter((w) => w.group === "kpis" && show(w.id)).length > 0 && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {show("kpi_presences") && (
             <KpiCard label="Présents aujourd'hui" value={stats.kpis.presencesAujourdhui}
               sub={`sur ${totalEleves} actifs`} icon={CheckSquare} delay={0} />
@@ -254,11 +298,12 @@ export default function DashboardPage() {
 
       {/* Charts row */}
       {(show("graph_presences") || show("distrib_ceintures")) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {show("graph_presences") && (
-            <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "100ms" }}>
+            <div className="rounded-[16px] p-5 animate-fade-up"
+              style={{ animationDelay: "100ms", backgroundColor: "var(--c-card)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold text-[#1a1a1a]">Présences — 6 mois</h2>
+                <h2 className="font-semibold text-sm" style={{ color: "var(--c-text-1)" }}>Présences — 6 mois</h2>
                 <span className="text-xs px-2 py-0.5 rounded-full font-medium"
                   style={{ backgroundColor: "var(--color-primary-subtle)", color: "var(--color-primary)" }}>
                   {stats.kpis.presencesMois} ce mois
@@ -268,8 +313,9 @@ export default function DashboardPage() {
             </div>
           )}
           {show("distrib_ceintures") && (
-            <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "180ms" }}>
-              <h2 className="font-semibold text-[#1a1a1a] mb-4">Répartition par ceinture</h2>
+            <div className="rounded-[16px] p-5 animate-fade-up"
+              style={{ animationDelay: "180ms", backgroundColor: "var(--c-card)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+              <h2 className="font-semibold text-sm mb-4" style={{ color: "var(--c-text-1)" }}>Répartition par ceinture</h2>
               <DonutChart data={stats.distribCeinture} total={totalEleves} />
             </div>
           )}
@@ -280,8 +326,9 @@ export default function DashboardPage() {
       {(show("top5") || show("eligibles") || show("last_post")) && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {show("top5") && stats.top5.length > 0 && (
-            <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "200ms" }}>
-              <h2 className="font-semibold text-[#1a1a1a] mb-4 flex items-center gap-2">
+            <div className="rounded-[16px] p-5 animate-fade-up"
+              style={{ animationDelay: "200ms", backgroundColor: "var(--c-card)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+              <h2 className="font-semibold text-sm mb-4 flex items-center gap-2" style={{ color: "var(--c-text-1)" }}>
                 <Medal size={16} style={{ color: "var(--color-primary)" }} />
                 Top présences ce mois
               </h2>
@@ -295,7 +342,7 @@ export default function DashboardPage() {
                       }}>
                       {i + 1}
                     </span>
-                    <span className="text-sm flex-1 text-[#1a1a1a] truncate">{e.prenom} {e.nom}</span>
+                    <span className="text-sm flex-1 truncate" style={{ color: "var(--c-text-1)" }}>{e.prenom} {e.nom}</span>
                     <span className="text-xs font-bold px-2 py-0.5 rounded-full"
                       style={{ backgroundColor: "var(--color-primary-subtle)", color: "var(--color-primary)" }}>
                       {e.count}
@@ -306,10 +353,11 @@ export default function DashboardPage() {
             </div>
           )}
           {show("eligibles") && stats.eligibles.length > 0 && (
-            <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "280ms" }}>
-              <h2 className="font-semibold text-[#1a1a1a] mb-4 flex items-center gap-2">
+            <div className="rounded-[16px] p-5 animate-fade-up"
+              style={{ animationDelay: "280ms", backgroundColor: "var(--c-card)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+              <h2 className="font-semibold text-sm mb-4 flex items-center gap-2" style={{ color: "var(--c-text-1)" }}>
                 <Award size={16} style={{ color: "var(--color-primary)" }} />
-                Éligibles ({stats.eligibles.length})
+                Éligibles à promotion ({stats.eligibles.length})
               </h2>
               <ul className="space-y-2.5">
                 {stats.eligibles.slice(0, 5).map((e) => (
@@ -317,7 +365,7 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{ backgroundColor: BELT_COLORS[e.ceinture] ?? "#999" }} />
-                      <span className="text-sm text-[#1a1a1a] truncate">{e.prenom} {e.nom}</span>
+                      <span className="text-sm truncate" style={{ color: "var(--c-text-1)" }}>{e.prenom} {e.nom}</span>
                     </div>
                     <span className="text-xs font-medium flex-shrink-0"
                       style={{ color: BELT_COLORS[e.nextBelt] ?? "var(--color-primary)" }}>
@@ -331,12 +379,13 @@ export default function DashboardPage() {
             </div>
           )}
           {show("last_post") && stats.lastPost && (
-            <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "360ms" }}>
-              <h2 className="font-semibold text-[#1a1a1a] mb-4 flex items-center gap-2">
+            <div className="rounded-[16px] p-5 animate-fade-up"
+              style={{ animationDelay: "360ms", backgroundColor: "var(--c-card)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+              <h2 className="font-semibold text-sm mb-4 flex items-center gap-2" style={{ color: "var(--c-text-1)" }}>
                 <Newspaper size={16} style={{ color: "var(--color-primary)" }} />
                 Dernière actualité
               </h2>
-              <p className="text-sm font-semibold text-[#1a1a1a]">{stats.lastPost.titre}</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--c-text-1)" }}>{stats.lastPost.titre}</p>
               <p className="text-xs mt-1" style={{ color: "var(--c-text-3)" }}>
                 {format(new Date(stats.lastPost.createdAt), "d MMMM yyyy", { locale: fr })}
               </p>
@@ -357,7 +406,7 @@ export default function DashboardPage() {
             style={{ backgroundColor: "var(--c-card)" }}
             onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-bold text-[#1a1a1a]">Personnaliser</h2>
+              <h2 className="font-bold" style={{ color: "var(--c-text-1)" }}>Personnaliser</h2>
               <button onClick={() => setShowSettings(false)}>
                 <X size={18} style={{ color: "var(--c-text-2)" }} />
               </button>
@@ -370,7 +419,7 @@ export default function DashboardPage() {
                   style={{ color: "var(--c-text-1)" }}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--c-hover)")}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>
-                  <span className="text-sm">{w.label.replace("KPI — ", "")}</span>
+                  <span className="text-sm">{w.label}</span>
                   {show(w.id)
                     ? <Eye size={16} style={{ color: "var(--color-primary)" }} />
                     : <EyeOff size={16} style={{ color: "var(--c-text-3)" }} />}
