@@ -19,6 +19,7 @@ interface SidebarProps {
 const ALL_ADMIN_LINKS = [
   { key: "dashboard",  href: "/admin/dashboard",  label: "Tableau de bord", icon: LayoutDashboard },
   { key: "eleves",     href: "/admin/eleves",     label: "Élèves",           icon: Users },
+  { key: "examens",    href: "/admin/examens",    label: "Examens",          icon: ClipboardList },
   { key: "presence",   href: "/admin/presence",   label: "Présence",         icon: CheckSquare },
   { key: "planning",   href: "/admin/planning",   label: "Planning",         icon: Calendar },
   { key: "cours",      href: "/admin/cours",      label: "Cours",            icon: BookOpen },

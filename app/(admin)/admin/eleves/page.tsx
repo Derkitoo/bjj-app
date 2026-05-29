@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { UserPlus, Upload } from "lucide-react";
+import { UserPlus, Upload, Award } from "lucide-react";
 import ElevesList from "./ElevesList";
 
 export default async function ElevesPage({
@@ -25,6 +25,14 @@ export default async function ElevesPage({
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#1a1a1a]">Élèves</h1>
         <div className="flex items-center gap-2">
+          <Link
+            href="/admin/examens/nouveau"
+            className="flex items-center gap-2 border-2 border-[var(--color-primary)] text-[var(--color-primary)] rounded-[8px] px-3 py-2.5 text-sm font-medium hover:bg-[var(--color-primary-subtle)] transition-colors"
+          >
+            <Award size={15} />
+            <span className="hidden sm:inline">Créer un examen</span>
+            <span className="sm:hidden">Examen</span>
+          </Link>
           <Link
             href="/admin/eleves/import"
             className="flex items-center gap-2 border border-[#e5e5e5] text-[#666666] rounded-[8px] px-3 py-2.5 text-sm font-medium hover:bg-[#f9f9f9] transition-colors"

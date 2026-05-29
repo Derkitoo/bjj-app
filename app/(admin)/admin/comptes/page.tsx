@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import {
   RefreshCw, ToggleLeft, ToggleRight, Copy, Check, Plus,
   KeyRound, X, Pencil, ShieldCheck, GraduationCap, Users, Settings,
-  LayoutDashboard, CheckSquare, Calendar, Award, Newspaper, CreditCard, UserCog, BookOpen,
+  LayoutDashboard, CheckSquare, Calendar, Award, Newspaper, CreditCard, UserCog, BookOpen, ClipboardList,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -38,6 +38,7 @@ const ROLE_LABEL: Record<string, string> = {
 const SECTIONS = [
   { key: "dashboard",  label: "Tableau de bord", icon: LayoutDashboard },
   { key: "eleves",     label: "Élèves",           icon: Users },
+  { key: "examens",    label: "Examens",          icon: ClipboardList },
   { key: "presence",   label: "Présence",         icon: CheckSquare },
   { key: "planning",   label: "Planning",         icon: Calendar },
   { key: "cours",      label: "Cours",            icon: BookOpen },

@@ -4,22 +4,23 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const session = await auth();
-  if (!session || (session.user as { role: string }).role !== "ELEVE") {
+  const eleveId = (session?.user as { eleveId?: string })?.eleveId;
+  if (!session || !eleveId) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user!.email! },
-    select: { eleveId: true },
+  const participations = await prisma.examenParticipant.findMany({
+    where: { eleveId },
+    include: {
+      session: {
+        include: { criteres: { orderBy: { ordre: "asc" } } },
+      },
+      evaluations: {
+        include: { critere: true },
+      },
+    },
+    orderBy: { session: { date: "desc" } },
   });
 
-  if (!user?.eleveId) return NextResponse.json([]);
-
-  const examens = await prisma.examen.findMany({
-    where: { eleveId: user.eleveId },
-    include: { techniques: { orderBy: { ordre: "asc" } } },
-    orderBy: { createdAt: "desc" },
-  });
-
-  return NextResponse.json(examens);
+  return NextResponse.json(participations);
 }

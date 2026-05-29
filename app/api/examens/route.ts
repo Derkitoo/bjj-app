@@ -2,52 +2,70 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const session = await auth();
-  const role = (session?.user as { role?: string })?.role;
+  const role = (session?.user as { role: string })?.role;
   if (!session || (role !== "ADMIN" && role !== "PROF")) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 
-  const { searchParams } = new URL(req.url);
-  const eleveId = searchParams.get("eleveId");
-
-  const examens = await prisma.examen.findMany({
-    where: eleveId ? { eleveId } : undefined,
-    include: { techniques: { orderBy: { ordre: "asc" } } },
-    orderBy: { createdAt: "desc" },
+  const sessions = await prisma.examenSession.findMany({
+    include: {
+      criteres: { orderBy: { ordre: "asc" } },
+      participants: {
+        include: {
+          eleve: { select: { id: true, nom: true, prenom: true, ceinture: true } },
+          evaluations: true,
+        },
+      },
+    },
+    orderBy: { date: "desc" },
   });
 
-  return NextResponse.json(examens);
+  return NextResponse.json(sessions);
 }
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  const role = (session?.user as { role?: string })?.role;
+  const role = (session?.user as { role: string })?.role;
   if (!session || (role !== "ADMIN" && role !== "PROF")) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 
-  const { eleveId, ceintureCible, date, techniques } = await req.json();
+  const body = await req.json();
+  const { date, ceintureCible, section, notes, criteres, eleveIds } = body;
 
-  if (!eleveId || !ceintureCible) {
-    return NextResponse.json({ error: "eleveId et ceintureCible requis" }, { status: 400 });
+  if (!date || !ceintureCible || !criteres?.length || !eleveIds?.length) {
+    return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
   }
 
-  const examen = await prisma.examen.create({
+  const examenSession = await prisma.examenSession.create({
     data: {
-      eleveId,
+      date: new Date(date),
       ceintureCible,
-      date: date ? new Date(date) : null,
-      techniques: {
-        create: (techniques as { nom: string }[] ?? []).map((t, i) => ({
-          nom: t.nom,
-          ordre: i,
-        })),
+      section: section ?? "GI",
+      notes: notes ?? null,
+      criteres: {
+        create: (criteres as string[]).map((nom, i) => ({ nom, ordre: i })),
+      },
+      participants: {
+        create: (eleveIds as string[]).map((eleveId) => ({ eleveId })),
       },
     },
-    include: { techniques: { orderBy: { ordre: "asc" } } },
+    include: {
+      criteres: true,
+      participants: true,
+    },
   });
 
-  return NextResponse.json(examen, { status: 201 });
+  // Créer les évaluations vides pour chaque participant × critère
+  for (const participant of examenSession.participants) {
+    for (const critere of examenSession.criteres) {
+      await prisma.examenEvaluation.create({
+        data: { participantId: participant.id, critereId: critere.id },
+      });
+    }
+  }
+
+  return NextResponse.json(examenSession, { status: 201 });
 }

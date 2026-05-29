@@ -54,7 +54,7 @@ model Eleve {
   presences       Presence[]
   promotions      Promotion[]
   paiements       Paiement[]
-  examens         Examen[]
+  examenParticipations ExamenParticipant[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }
@@ -145,27 +145,46 @@ model Cotisation {
   @@unique([eleveId, saison])
 }
 
-model Examen {
-  id            String            @id @default(cuid())
-  eleveId       String
-  eleve         Eleve             @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+model ExamenSession {
+  id            String              @id @default(cuid())
+  date          DateTime
   ceintureCible String
-  date          DateTime?
-  statut        String            @default("EN_ATTENTE")
-  notesProf     String?
-  techniques    ExamenTechnique[]
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  section       String              @default("GI")
+  notes         String?
+  statut        String              @default("PLANIFIE")
+  criteres      ExamenCritere[]
+  participants  ExamenParticipant[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 }
 
-model ExamenTechnique {
-  id          String  @id @default(cuid())
-  examenId    String
-  examen      Examen  @relation(fields: [examenId], references: [id], onDelete: Cascade)
+model ExamenCritere {
+  id          String              @id @default(cuid())
+  sessionId   String
+  session     ExamenSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   nom         String
-  statut      String  @default("NON_EVALUE")
-  commentaire String?
-  ordre       Int     @default(0)
+  ordre       Int                 @default(0)
+  evaluations ExamenEvaluation[]
+}
+
+model ExamenParticipant {
+  id          String             @id @default(cuid())
+  sessionId   String
+  session     ExamenSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  eleveId     String
+  eleve       Eleve              @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+  resultat    String?
+  notesProf   String?
+  evaluations ExamenEvaluation[]
+}
+
+model ExamenEvaluation {
+  id            String            @id @default(cuid())
+  participantId String
+  participant   ExamenParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  critereId     String
+  critere       ExamenCritere     @relation(fields: [critereId], references: [id], onDelete: Cascade)
+  statut        String            @default("NON_EVALUE")
 }
 
 model SeanceTechnique {
