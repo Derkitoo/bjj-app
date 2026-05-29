@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
-import { QrCode, CheckCircle, Calendar, TrendingUp, Zap } from "lucide-react";
+import { QrCode, CheckCircle, Calendar, TrendingUp, Zap, Clock, ClipboardList, ChevronRight } from "lucide-react";
 import CeintureBadge from "@/components/CeintureBadge";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCountUp } from "@/hooks/useCountUp";
+import { format, differenceInDays } from "date-fns";
+import { fr } from "date-fns/locale";
+import Link from "next/link";
 
 const BELT_BG: Record<string, { from: string; to: string; text: string }> = {
   BLANCHE:  { from: "#f0f0f0", to: "#e0e0e0", text: "#1a1a1a" },
@@ -18,10 +21,22 @@ const BELT_LABELS: Record<string, string> = {
   BLANCHE: "Blanche", BLEUE: "Bleue", VIOLETTE: "Violette", MARRON: "Marron", NOIRE: "Noire",
 };
 
+const CEINTURE_EMOJI: Record<string, string> = {
+  BLEUE: "🔵", VIOLETTE: "🟣", MARRON: "🟤", NOIRE: "⚫",
+};
+
 interface ProfilData {
-  nom: string; prenom: string; ceinture: string; barrettes: number;
-  totalPresences: number; presencesMois: number;
-  nextBelt: string | null; progression: number;
+  nom: string;
+  prenom: string;
+  ceinture: string;
+  barrettes: number;
+  totalPresences: number;
+  presencesMois: number;
+  nextBelt: string | null;
+  progression: number;
+  derniereCours: { date: string; type: string } | null;
+  prochainCours: { jour: string; heure: string; type: string; daysUntil: number; duree: number } | null;
+  examenEnCours: { id: string; ceintureCible: string; nbMaitrises: number; total: number } | null;
 }
 
 function ProgressRing({ pct, size = 100 }: { pct: number; size?: number }) {
@@ -30,12 +45,9 @@ function ProgressRing({ pct, size = 100 }: { pct: number; size?: number }) {
   const filled = (pct / 100) * c;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none"
-        stroke="rgba(255,255,255,0.15)" strokeWidth="7" />
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none"
-        stroke="rgba(255,255,255,0.9)" strokeWidth="7"
-        strokeDasharray={`${filled} ${c}`}
-        strokeLinecap="round"
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="7" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="7"
+        strokeDasharray={`${filled} ${c}`} strokeLinecap="round"
         style={{ transition: "stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)" }} />
     </svg>
   );
@@ -86,6 +98,7 @@ function AccueilContent() {
 
   return (
     <div className="space-y-4 pb-4">
+
       {/* ── Hero ── */}
       {profil && (
         <div
@@ -135,7 +148,7 @@ function AccueilContent() {
 
       {/* ── Stats ── */}
       {profil && (
-        <div className="grid grid-cols-2 gap-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
+        <div className="grid grid-cols-2 gap-3 animate-fade-up" style={{ animationDelay: "60ms" }}>
           <div className="bg-white rounded-[16px] shadow-sm p-4 text-center">
             <div className="flex items-center justify-center mb-1" style={{ color: "var(--color-primary)" }}>
               <TrendingUp size={18} />
@@ -153,8 +166,105 @@ function AccueilContent() {
         </div>
       )}
 
+      {/* ── Prochaine séance ── */}
+      {profil?.prochainCours && (
+        <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "100ms" }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: "var(--color-primary-subtle)" }}>
+                <Calendar size={18} style={{ color: "var(--color-primary)" }} />
+              </div>
+              <div>
+                <p className="text-xs text-[#999999] font-medium uppercase tracking-wide">Prochaine séance</p>
+                <p className="font-bold text-[#1a1a1a] mt-0.5">
+                  {profil.prochainCours.daysUntil === 0
+                    ? "Aujourd'hui"
+                    : profil.prochainCours.daysUntil === 1
+                    ? "Demain"
+                    : profil.prochainCours.jour}
+                  {" · "}{profil.prochainCours.heure}
+                </p>
+                <p className="text-xs text-[#666666] mt-0.5">
+                  {profil.prochainCours.type} · {profil.prochainCours.duree} min
+                </p>
+              </div>
+            </div>
+            {profil.prochainCours.daysUntil === 0 && (
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-700">
+                Ce soir
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Dernière présence ── */}
+      {profil?.derniereCours && (
+        <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "140ms" }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[#f5f5f5]">
+              <Clock size={18} className="text-[#666666]" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs text-[#999999] font-medium uppercase tracking-wide">Dernière présence</p>
+              <p className="font-semibold text-[#1a1a1a] mt-0.5">
+                {format(new Date(profil.derniereCours.date), "EEEE d MMMM", { locale: fr })}
+              </p>
+              <p className="text-xs text-[#999999] mt-0.5">
+                {profil.derniereCours.type}
+                {" · "}
+                {(() => {
+                  const days = differenceInDays(new Date(), new Date(profil.derniereCours!.date));
+                  if (days === 0) return "Aujourd'hui";
+                  if (days === 1) return "Hier";
+                  return `il y a ${days} jours`;
+                })()}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Examen en cours ── */}
+      {profil?.examenEnCours && (
+        <Link
+          href="/eleve/examens"
+          className="block bg-white rounded-[16px] shadow-sm p-5 animate-fade-up hover:shadow-md transition-shadow"
+          style={{ animationDelay: "180ms" }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: "#fff7ed" }}>
+              <ClipboardList size={18} className="text-orange-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[#999999] font-medium uppercase tracking-wide">Examen en cours</p>
+              <p className="font-bold text-[#1a1a1a] mt-0.5">
+                Ceinture {CEINTURE_EMOJI[profil.examenEnCours.ceintureCible]}{" "}
+                {profil.examenEnCours.ceintureCible.charAt(0) + profil.examenEnCours.ceintureCible.slice(1).toLowerCase()}
+              </p>
+              {profil.examenEnCours.total > 0 && (
+                <div className="mt-1.5">
+                  <div className="flex items-center justify-between text-xs text-[#999999] mb-1">
+                    <span>{profil.examenEnCours.nbMaitrises}/{profil.examenEnCours.total} techniques maîtrisées</span>
+                  </div>
+                  <div className="h-1.5 bg-[#f0f0f0] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-green-400 rounded-full"
+                      style={{ width: `${(profil.examenEnCours.nbMaitrises / profil.examenEnCours.total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <ChevronRight size={16} className="text-[#cccccc] flex-shrink-0" />
+          </div>
+        </Link>
+      )}
+
       {/* ── QR Scan ── */}
-      <div className="bg-white rounded-[16px] shadow-sm p-6 animate-fade-up" style={{ animationDelay: "160ms" }}>
+      <div className="bg-white rounded-[16px] shadow-sm p-6 animate-fade-up" style={{ animationDelay: "220ms" }}>
         <div className="flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
             style={{ backgroundColor: "var(--color-primary-subtle)" }}>
@@ -181,24 +291,10 @@ function AccueilContent() {
               Enregistrement...
             </div>
           )}
-
           <p className="text-xs text-[#999999]">Le scan se fait automatiquement quand tu ouvres le lien du QR Code</p>
         </div>
       </div>
 
-      {/* ── Planning ── */}
-      <div className="bg-white rounded-[16px] shadow-sm p-5 animate-fade-up" style={{ animationDelay: "240ms" }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 font-semibold text-[#1a1a1a]">
-            <Calendar size={18} style={{ color: "var(--color-primary)" }} />
-            Planning de la semaine
-          </div>
-          <a href="/eleve/planning" className="text-xs font-medium hover:underline"
-            style={{ color: "var(--color-primary)" }}>
-            Voir tout →
-          </a>
-        </div>
-      </div>
     </div>
   );
 }
